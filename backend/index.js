@@ -4,16 +4,18 @@ const path = require('path');
 const db = require('./db');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en puerto ${PORT}`);
-});
+
 
 app.use(cors());
 app.use(express.json());
 
 // Servir la carpeta frontend completa
 app.use(express.static(path.join(__dirname, '../frontend')));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en puerto ${PORT}`);
+});
 
 // ==========================================
 // 1. ENDPOINTS DE AUTENTICACIÓN Y REGISTRO
