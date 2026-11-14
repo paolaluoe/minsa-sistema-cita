@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINSA - Panel de Administración</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+
+        .admin-header {
+            background-color: #002B40;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1050;
+            position: relative;
+        }
+
+        .sidebar {
+            background-color: #003a5c;
+            color: white;
+            min-height: calc(100vh - 66px);
+            width: 250px;
+            position: fixed;
+            top: 66px;
+            left: 0;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 15px 20px;
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: #0d6efd;
+        }
+
+        .sidebar .nav-link i {
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            min-height: calc(100vh - 66px);
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            margin-bottom: 25px;
+            border: none;
+        }
+
+        .content-section {
+            display: none;
+            /* Mantenemos esto si tu JS lo requiere, pero asegúrate de que al mostrarlo use flex o block */
+        }
+
+        .content-section.active {
+            display: block !important;
+        }
+
+        /* Forzar un borde brillante y claro al presionar Tab en cualquier elemento interactivo */
+        input:focus,
+        select:focus,
+        textarea:focus,
+        button:focus {
+            outline: 3px solid #0d6efd !important;
+            outline-offset: 2px !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        }
+    </style>
+</head>
+
+<body onload="cargarDatosIniciales()">
+
+    <!-- Cabecera Superior -->
+    <header class="admin-header shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-white text-primary fw-bold rounded p-1 px-2" style="font-size: 1.2rem;">M</div>
+            <div>
+                <h1 class="h6 mb-0 fw-bold">MINSA</h1>
+                <p class="mb-0 text-white-50 small" style="font-size: 0.75rem;">Panel de Control y Gestión</p>
+            </div>
+        </div>
+        <div>
+            <span class="me-3 small text-white-50"><i class="fa-solid fa-user-shield me-1"></i> Administrador
+                General</span>
+            <button onclick="cerrarSesionAdmin()" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">
+                <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <div class="d-flex">
+
+        <!-- Sidebar -->
+        <div class="sidebar shadow">
+            <div class="p-3 border-bottom border-secondary mb-2">
+                <small class="text-uppercase text-white-50 fw-bold" style="letter-spacing: 1px;">Gestión del
+                    Sistema</small>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="mostrarSeccion('dashboard', this)">
+                        <i class="fa-solid fa-chart-line"></i> Panel y Métricas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" onclick="mostrarSeccion('especialidades', this)">
+                        <i class="fa-solid fa-stethoscope"></i> Especialidades
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="mostrarSeccion('agendas', this)">
+                        <i class="fa-solid fa-user-doctor"></i> Médicos y Horarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="javascript:void(0);" onclick="mostrarSeccion('usuarios', this)">
+                        <i class="fa-solid fa-users"></i> Gestión de Usuarios
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Contenido Principal -->
+        <main class="main-content flex-grow-1">
+
+            <!-- SECCIÓN: DASHBOARD -->
+            <div id="seccion-dashboard" class="content-section">
+                <h3 class="fw-bold mb-4 text-dark">Dashboard Analítico de Citas Médicas</h3>
+                <p class="text-muted mb-4">Monitoreo global de reservas, asistencias y atenciones institucional del
+                    MINSA.</p>
+
+                <!-- Tarjetas de Métricas Estilo Pro -->
+                <div class="row g-4 mb-4">
+                    <!-- Citas Programadas -->
+                    <div class="col-md-3">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 p-3 border-start border-primary border-4 bg-white h-100">
+                            <span class="text-muted small fw-bold text-uppercase">Citas Programadas</span>
+                            <h2 id="statProg" class="fw-bold mb-0 text-dark mt-2">0</h2>
+                            <small id="statProgSub" class="text-muted mt-2 d-block">Total histórico en el
+                                sistema.</small>
+                        </div>
+                    </div>
+                    <!-- Citas Atendidas -->
+                    <div class="col-md-3">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 p-3 border-start border-success border-4 bg-white h-100">
+                            <span class="text-muted small fw-bold text-uppercase">Citas Atendidas</span>
+                            <h2 id="statAten" class="fw-bold mb-0 text-dark mt-2">0</h2>
+                            <small id="statAtenSub" class="text-muted mt-2 d-block">0% del total de citas.</small>
+                        </div>
+                    </div>
+                    <!-- Citas Canceladas -->
+                    <div class="col-md-3">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 p-3 border-start border-danger border-4 bg-white h-100">
+                            <span class="text-muted small fw-bold text-uppercase">Citas Canceladas</span>
+                            <h2 id="statCanc" class="fw-bold mb-0 text-dark mt-2">0</h2>
+                            <small id="statCancSub" class="text-muted mt-2 d-block">0% del total de citas.</small>
+                        </div>
+                    </div>
+                    <!-- Tasa de Inasistencia -->
+                    <div class="col-md-3">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 p-3 border-start border-warning border-4 bg-white h-100">
+                            <span class="text-muted small fw-bold text-uppercase">Tasa de Inasistencia</span>
+                            <h2 id="statInas" class="fw-bold mb-0 text-dark mt-2">0.0%</h2>
+                            <small id="statInasSub" class="text-muted mt-2 d-block">0 inasistencia(s)
+                                registrada(s).</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4 mt-2">
+                    <!-- Gráfico de Citas por Mes -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                            <h5 class="fw-bold text-dark mb-3">Evolución de Citas Médicas</h5>
+                            <div style="height: 300px;">
+                                <canvas id="graficoCitas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico Circular por Especialidad -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                            <h5 class="fw-bold text-dark mb-3">Atenciones por Especialidad</h5>
+                            <div style="height: 300px; display: flex; justify-content: center; align-items: center;">
+                                <canvas id="graficoEspecialidades"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla Accesible de Actividad Reciente -->
+                <div class="row mt-4 mb-5">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                            <h5 class="fw-bold text-dark mb-3">Últimas Reservas Registradas en el Sistema</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle" role="table">
+                                    <caption class="text-muted small">Listado de recientes reservas activas por
+                                        especialidad y establecimiento</caption>
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">Paciente</th>
+                                            <th scope="col">Especialidad</th>
+                                            <th scope="col">Establecimiento</th>
+                                            <th scope="col">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaCitasRecientesBody">
+                                        <tr>
+                                            <th scope="row">1001</th>
+                                            <td>Renato Ledesma</td>
+                                            <td>Oftalmología</td>
+                                            <td>Instituto Nacional de Salud del Niño</td>
+                                            <td><span class="badge bg-success">RESERVADA</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">1002</th>
+                                            <td>Paola Olivos</td>
+                                            <td>Pediatría</td>
+                                            <td>Hospital de Emergencias José Casimiro Ulloa</td>
+                                            <td><span class="badge bg-success">RESERVADA</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECCIÓN: GESTIÓN DE ESPECIALIDADES -->
+            <div id="seccion-especialidades" class="content-section active">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div>
+                        <h3 class="fw-bold mb-1 text-dark">Gestión de Especialidades por Hospital</h3>
+                        <p class="text-muted small mb-0">Habilite o desactive servicios médicos en tiempo real.</p>
+                    </div>
+                    <select id="selectHospitalAdmin" class="form-select shadow-sm border-primary"
+                        style="width: auto; min-width: 250px;" onchange="cargarEspecialidadesAdmin()">
+                        <option value="">Cargando hospitales...</option>
+                    </select>
+                </div>
+
+                <div class="admin-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="py-3">Especialidad</th>
+                                    <th scope="col" class="py-3">Descripción</th>
+                                    <th scope="col" class="py-3 text-center">Estado Actual</th>
+                                    <th scope="col" class="py-3 text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaEspecialidades">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">Seleccione un hospital para ver
+                                        sus especialidades...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: GESTIÓN DE MÉDICOS Y HORARIOS -->
+            <div id="seccion-agendas" class="content-section">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div>
+                        <h3 class="fw-bold mb-1 text-dark">Agendas Médicas y Horarios</h3>
+                        <p class="text-muted small mb-0">Gestione el personal médico y asigne turnos de atención.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary fw-bold shadow-sm px-3"
+                            onclick="abrirModalNuevoMedico()">
+                            <i class="fa-solid fa-user-plus me-1"></i> Nuevo Médico
+                        </button>
+                        <button class="btn btn-primary fw-bold shadow-sm px-3" onclick="abrirModalNuevoHorario()">
+                            <i class="fa-solid fa-calendar-plus me-1"></i> Agregar Horario
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Filtrar por Hospital</label>
+                            <select id="filtroHospitalAgendas" class="form-select">
+                                <option value="">Cargando hospitales...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Filtrar por Especialidad</label>
+                            <select id="filtroEspecialidadAgendas" class="form-select"
+                                onchange="filtrarAgendasPorEspecialidad()">
+                                <option value="">Todas las especialidades</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="py-3">Médico</th>
+                                    <th scope="col" class="py-3">Especialidad</th>
+                                    <th scope="col" class="py-3 text-center">Turnos Asignados</th>
+                                    <th scope="col" class="py-3 text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaAgendas">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">Seleccione una sede...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Sección de Gestión de Usuarios -->
+            <div id="seccion-usuarios" class="content-section">
+                <div class="container-fluid py-4">
+                    <h3 class="fw-bold text-dark mb-4"><i class="fa-solid fa-users me-2"></i>Gestión y Registro de
+                        Usuarios</h3>
+
+                    <!-- Tarjeta con el formulario para registrar un usuario desde el admin -->
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                        <h5 class="fw-bold text-dark mb-3"><i
+                                class="fa-solid fa-user-plus text-primary me-2"></i>Registrar Nuevo Usuario</h5>
+                        <form id="formAdminRegistro" onsubmit="registrarUsuarioAdmin(event)">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-muted small">Nombres y Apellidos</label>
+                                    <input type="text" id="adminRegNombres" class="form-control rounded-3"
+                                        placeholder="Ej. Juan Pérez" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-muted small">Número de DNI</label>
+                                    <input type="text" id="adminRegDni" class="form-control rounded-3"
+                                        placeholder="8 dígitos" maxlength="8" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-muted small">Correo Electrónico</label>
+                                    <input type="email" id="adminRegCorreo" class="form-control rounded-3"
+                                        placeholder="correo@minsa.gob.pe" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-muted small">Contraseña Temporal</label>
+                                    <input type="password" id="adminRegPassword" class="form-control rounded-3"
+                                        placeholder="******" required>
+                                </div>
+                                <div class="col-12 mt-4 text-end">
+                                    <button type="submit" class="btn btn-primary px-4 rounded-pill fw-semibold">
+                                        <i class="fa-solid fa-check me-1"></i> Guardar Usuario
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Gestionar Horarios del Médico -->
+    <div class="modal fade" id="modalGestionHorarios" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header text-white" style="background-color: #002B40;">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-calendar-days me-2"></i>Gestión de Horarios -
+                        <span id="lblNombreMedicoModal">Dr. Médico</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">Listado de turnos y bloques horarios asignados en el sistema:</p>
+                    <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Hora Inicio</th>
+                                    <th>Hora Fin</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaHorariosModal">
+                                <!-- Se llena dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm px-4 fw-semibold"
+                        data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 1: Registrar Nuevo Médico -->
+    <div class="modal fade" id="modalNuevoMedico" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header text-white" style="background-color: #002B40;">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-doctor me-2"></i>Registrar Nuevo Médico
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Quitamos la etiqueta form para evitar bloqueos de validación HTML nativa -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Hospital / Sede</label>
+                        <select id="medHosp" class="form-select"
+                            onchange="cargarEspecialidadesSelect(this.value, 'medEsp')">
+                            <option value="">Seleccione un hospital...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Especialidad</label>
+                        <select id="medEsp" class="form-select">
+                            <option value="">Seleccione primero un hospital...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Nombres</label>
+                        <input type="text" id="medNombres" class="form-control" placeholder="Ej. Ricardo">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Apellidos</label>
+                        <input type="text" id="medApellidos" class="form-control" placeholder="Ej. Olivos">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm px-4"
+                        data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary btn-sm px-4 fw-bold"
+                        onclick="guardarMedicoUnico()">Guardar Médico</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Agregar Horario / Turno a un Médico Existente (Diseño Mejorado) -->
+    <div class="modal fade" id="modalNuevoHorario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header text-white" style="background-color: #002B40;">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-calendar-days me-2"></i>Asignar Horario a
+                        Médico</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Hospital / Sede</label>
+                        <select id="horHosp" class="form-select shadow-sm"
+                            onchange="cargarEspecialidadesSelect(this.value, 'horEsp')">
+                            <option value="">Seleccione un hospital...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Especialidad</label>
+                        <select id="horEsp" class="form-select shadow-sm"
+                            onchange="cargarMedicosPorEspecialidad(this.value)">
+                            <option value="">Seleccione primero un hospital...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Seleccionar Médico</label>
+                        <select id="horMedicoId" class="form-select shadow-sm">
+                            <option value="">Seleccione primero una especialidad...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Fecha de Atención</label>
+                        <input type="date" id="horFecha" class="form-control shadow-sm">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-secondary">Hora de Inicio</label>
+                            <select id="horInicio" class="form-select shadow-sm">
+                                <option value="">Seleccione...</option>
+                                <option value="08:00:00">08:00 a. m.</option>
+                                <option value="09:00:00">09:00 a. m.</option>
+                                <option value="10:00:00">10:00 a. m.</option>
+                                <option value="11:00:00">11:00 a. m.</option>
+                                <option value="12:00:00">12:00 p. m.</option>
+                                <option value="14:00:00">02:00 p. m.</option>
+                                <option value="15:00:00">03:00 p. m.</option>
+                                <option value="16:00:00">04:00 p. m.</option>
+                                <option value="17:00:00">05:00 p. m.</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-secondary">Hora de Fin</label>
+                            <select id="horFin" class="form-select shadow-sm">
+                                <option value="">Seleccione...</option>
+                                <option value="08:45:00">08:45 a. m.</option>
+                                <option value="09:45:00">09:45 a. m.</option>
+                                <option value="10:45:00">10:45 a. m.</option>
+                                <option value="11:45:00">11:45 a. m.</option>
+                                <option value="12:45:00">12:45 p. m.</option>
+                                <option value="14:45:00">02:45 p. m.</option>
+                                <option value="15:45:00">03:45 p. m.</option>
+                                <option value="16:45:00">04:45 p. m.</option>
+                                <option value="17:45:00">05:45 p. m.</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm px-4"
+                        data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary btn-sm px-4 fw-bold shadow-sm"
+                        onclick="guardarHorarioUnico()">Guardar Horario</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de Confirmación Personalizado -->
+    <div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4 p-3">
+                <div class="text-center py-3">
+                    <i class="fa-solid fa-triangle-exclamation text-warning fa-3x mb-3"></i>
+                    <h4 class="fw-bold text-dark">¿Estás seguro?</h4>
+                    <p id="mensajeConfirmacionTexto" class="text-muted px-3">¿Está seguro de realizar esta acción?</p>
+                </div>
+                <div class="d-flex justify-content-center gap-2 pb-2">
+                    <button type="button" class="btn btn-light px-4 rounded-pill fw-semibold"
+                        onclick="document.getElementById('modalConfirmacion').style.display='none';">Cancelar</button>
+                    <button type="button" id="btnConfirmarAccion"
+                        class="btn btn-danger px-4 rounded-pill fw-semibold">Sí, eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de Mensaje / Alerta General -->
+    <div class="modal fade" id="modalAlertaSistema" tabindex="-1" aria-labelledby="modalAlertaSistemaLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4 p-2">
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3 text-danger" id="iconoAlertaModal">
+                        <i class="bi bi-exclamation-triangle-fill display-3"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2" id="tituloAlertaModal">¡Atención!</h4>
+                    <p class="text-muted mb-4" id="mensajeAlertaModal">Ocurrió un error en el proceso.</p>
+                    <button type="button" class="btn btn-success px-4 rounded-pill fw-semibold"
+                        data-bs-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Alerta Flotante (Toast) para mensajes limpios sin alertas de navegador -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="toastExito" class="toast align-items-center text-white bg-success border-0" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div id="toastMensaje" class="toast-body fw-semibold">
+                    ¡Operación realizada con éxito!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Bootstrap y Lógica -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        // Si estás en tu PC usa localhost, si estás en internet usa la URL de Render
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : 'https://tu-backend-real.onrender.com'; // 👈 Aquí pegas tu URL de Render cuando la tengas
+        // Verificación de seguridad de sesión del admin
+        if (localStorage.getItem('adminLogueado') !== 'true') {
+            window.location.href = 'index.html';
+        }
+
+        let hospitalesAdmin = [];
+
+        function mostrarSeccion(seccionId, elementoMenu) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+
+            document.getElementById('seccion-' + seccionId).classList.add('active');
+            elementoMenu.classList.add('active');
+
+            if (seccionId === 'agendas') {
+                actualizarFiltrosAgendas();
+            } else if (seccionId === 'usuarios') {
+                // 👉 Forzar el foco directamente al primer input del formulario al cambiar a esta sección
+                const primerInput = document.getElementById('adminRegNombres');
+                if (primerInput) {
+                    primerInput.focus();
+                }
+            }
+        }
+
+        // 2. Cargar Hospitales al iniciar la página
+        async function cargarDatosIniciales() {
+            try {
+                const res = await fetch(`${API_URL}/api/establecimientos`);
+                hospitalesAdmin = await res.json();
+
+                const selectHospEspecialidades = document.getElementById('selectHospitalAdmin');
+                const selectHospAgendas = document.getElementById('filtroHospitalAgendas');
+
+                selectHospEspecialidades.innerHTML = '';
+                selectHospAgendas.innerHTML = '';
+
+                hospitalesAdmin.forEach(h => {
+                    const opt1 = document.createElement('option');
+                    opt1.value = h.id;
+                    opt1.textContent = h.nombre;
+                    selectHospEspecialidades.appendChild(opt1);
+
+                    const opt2 = document.createElement('option');
+                    opt2.value = h.id;
+                    opt2.textContent = h.nombre;
+                    selectHospAgendas.appendChild(opt2);
+                });
+
+                if (hospitalesAdmin.length > 0) {
+                    cargarEspecialidadesAdmin();
+                    actualizarFiltrosAgendas();
+                }
+
+                // ==========================================
+                // 🚀 AGREGA ESTA LÍNEA AQUÍ PARA CARGAR LAS CITAS
+                // ==========================================
+                cargarGraficoEspecialidades();
+                cargarCitasRecientes();
+
+            } catch (err) {
+                console.error("Error al cargar hospitales:", err);
+            }
+        }
+
+        // 3. Cargar Especialidades según el hospital seleccionado
+        async function cargarEspecialidadesAdmin() {
+            const hospId = document.getElementById('selectHospitalAdmin').value;
+            if (!hospId) return;
+
+            try {
+                // 👉 Usamos la ruta de administración para que devuelva TODAS (Habilitadas y Deshabilitadas)
+                const res = await fetch(`${API_URL}/api/admin/establecimientos/${hospId}/especialidades`);
+                const especialidades = await res.json();
+                const tbody = document.getElementById('tablaEspecialidades');
+                tbody.innerHTML = '';
+
+                if (especialidades.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay especialidades registradas.</td></tr>';
+                    return;
+                }
+
+                const espUnicas = [];
+                const idsVistos = new Set();
+                especialidades.forEach(esp => {
+                    if (!idsVistos.has(esp.id)) {
+                        idsVistos.add(esp.id);
+                        espUnicas.push(esp);
+                    }
+                });
+
+                espUnicas.forEach(esp => {
+                    const tr = document.createElement('tr');
+
+                    // Verificamos el estado real que viene de la base de datos ('Habilitado' o 'Deshabilitado')
+                    const esActivo = esp.estado === 'Habilitado' || !esp.estado;
+                    const badgeClass = esActivo ? 'bg-success' : 'bg-danger';
+                    const badgeText = esActivo ? 'Habilitado' : 'Deshabilitado';
+                    const btnClass = esActivo ? 'btn-outline-danger' : 'btn-outline-success';
+                    const btnText = esActivo ? 'Deshabilitar' : 'Habilitar';
+
+                    tr.innerHTML = `
+                <td>
+                    <span class="fs-5 me-2">${esp.icono || '🩺'}</span> 
+                    <span class="fw-bold">${esp.nombre}</span>
+                </td>
+                <td class="text-muted small">${esp.descripcion || 'Servicio médico'}</td>
+                <td class="text-center">
+                    <span class="badge ${badgeClass} px-3 py-2 estado-badge">${badgeText}</span>
+                </td>
+                <td class="text-end">
+                    <button class="btn btn-sm ${btnClass} fw-bold px-3 btn-accion" onclick="alternarEstado(this, ${esp.id})">
+                        ${btnText}
+                    </button>
+                </td>
+            `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error al cargar especialidades:", err);
+            }
+        }
+
+        // Actualizar select de especialidades en la pestaña Agendas según el hospital elegido
+        async function actualizarFiltrosAgendas() {
+            const hospId = document.getElementById('filtroHospitalAgendas').value;
+            const selectEsp = document.getElementById('filtroEspecialidadAgendas');
+            selectEsp.innerHTML = '<option value="">Todas las especialidades</option>';
+
+            if (!hospId) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades`);
+                const especialidades = await res.json();
+
+                const espUnicas = [];
+                const idsVistos = new Set();
+                especialidades.forEach(esp => {
+                    if (!idsVistos.has(esp.id)) {
+                        idsVistos.add(esp.id);
+                        espUnicas.push(esp);
+                    }
+                });
+
+                espUnicas.forEach(esp => {
+                    const opt = document.createElement('option');
+                    opt.value = esp.id; // ID real de la especialidad
+                    opt.textContent = esp.nombre;
+                    selectEsp.appendChild(opt);
+                });
+
+                cargarMedicosAgendas(hospId);
+            } catch (err) {
+                console.error("Error al filtrar agendas:", err);
+            }
+        }
+
+        function filtrarAgendasPorEspecialidad() {
+            const hospId = document.getElementById('filtroHospitalAgendas').value;
+            const espId = document.getElementById('filtroEspecialidadAgendas').value;
+            cargarMedicosAgendas(hospId, espId);
+        }
+
+        async function cargarMedicosAgendas(hospId, espId = '') {
+            const tbody = document.getElementById('tablaAgendas');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Cargando agendas médicas...</td></tr>';
+
+            try {
+                let data = [];
+
+                // Si hay una especialidad seleccionada (espId tiene valor), consultamos estrictamente esa.
+                // Si está en blanco ("Todas las especialidades"), recorremos las especialidades del hospital.
+                const resEsp = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades`);
+                const especialidades = await resEsp.json();
+
+                const idsAConsultar = espId ? [espId] : [...new Set(especialidades.map(e => e.id))];
+
+                for (let id of idsAConsultar) {
+                    try {
+                        const resMed = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades/${id}/medicos-horarios`);
+                        const medicosData = await resMed.json();
+                        if (Array.isArray(medicosData)) {
+                            const espObj = especialidades.find(e => e.id == id);
+                            medicosData.forEach(m => {
+                                m.especialidad_id = id;
+                                m.especialidad_name = espObj ? espObj.nombre : "Especialidad General";
+                            });
+                            data = data.concat(medicosData);
+                        }
+                    } catch (e) { }
+                }
+
+                tbody.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay médicos o turnos programados para esta selección.</td></tr>';
+                    return;
+                }
+
+                const medicosAgrupados = {};
+                data.forEach(item => {
+                    const nombreMedico = item.medico_nombre || item.nombre_medico || "Dr(a). Asignado";
+                    const nombreEsp = item.especialidad_name;
+                    const espIdReal = item.especialidad_id;
+                    const medicoIdReal = item.medico_id || item.id; // 👉 Capturamos el ID real del médico
+                    const cmpText = item.cmp ? `CMP: ${item.cmp}` : 'Personal autorizado MINSA';
+
+                    const key = `${nombreMedico}-${espIdReal}`;
+                    if (!medicosAgrupados[key]) {
+                        medicosAgrupados[key] = {
+                            nombre: nombreMedico,
+                            especialidad: nombreEsp,
+                            espId: espIdReal,
+                            medicoId: medicoIdReal, // 👉 Almacenamos el ID del médico
+                            cmp: cmpText,
+                            totalTurnos: 0
+                        };
+                    }
+                    medicosAgrupados[key].totalTurnos++;
+                });
+
+                Object.values(medicosAgrupados).forEach(medico => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <div class="fw-bold text-dark"><i class="fa-solid fa-user-doctor text-primary me-2"></i>${medico.nombre}</div>
+                            <div class="small text-muted">${medico.cmp}</div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">${medico.especialidad}</span></td>
+                        <td class="text-center">
+                            <span class="badge bg-primary rounded-pill px-3 py-2">${medico.totalTurnos} horarios activos</span>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary me-1 btn-gestionar" 
+                                    data-nombre="${medico.nombre}" 
+                                    data-hosp="${hospId}" 
+                                    data-medicoid="${medico.medicoId}" 
+                                    title="Gestionar Horarios">
+                                <i class="fa-regular fa-calendar-days"></i> Gestionar
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.querySelectorAll('.btn-gestionar').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const nombre = this.getAttribute('data-nombre');
+                        const hospital = this.getAttribute('data-hosp');
+                        const medicoIdR = this.getAttribute('data-medicoid'); // 👉 Obtenemos el ID del médico
+                        abrirGestionHorarios(nombre, hospital, medicoIdR);     // 👉 Pasamos el ID correcto
+                    });
+                });
+
+            } catch (err) {
+                console.error("Error cargando tabla de agendas:", err);
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">Error al sincronizar con la base de datos.</td></tr>';
+            }
+        }
+
+        async function abrirGestionHorarios(nombreMedico, hospId, medicoId) {
+            document.getElementById('lblNombreMedicoModal').textContent = nombreMedico;
+            const tbodyModal = document.getElementById('tablaHorariosModal');
+            tbodyModal.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Cargando turnos...</td></tr>';
+
+            const modalEl = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalGestionHorarios'));
+            modalEl.show();
+
+            try {
+                // 👉 Esta es la ruta correcta que está en tu index.js
+                const res = await fetch(`${API_URL}/api/medicos/${medicoId}/horarios`);
+                const turnosMedico = await res.json();
+
+                tbodyModal.innerHTML = '';
+                if (!turnosMedico || turnosMedico.length === 0) {
+                    tbodyModal.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No hay horarios registrados para este médico.</td></tr>';
+                    return;
+                }
+
+                turnosMedico.forEach(t => {
+                    const tr = document.createElement('tr');
+
+                    let estadoBadge = '';
+                    if (t.disponible == 1 || t.disponible === true) {
+                        estadoBadge = '<span class="badge bg-success">Disponible</span>';
+                    } else {
+                        if (t.estado_cita === 'NO_ASISTIO') {
+                            estadoBadge = '<span class="badge bg-danger">No Asistió</span>';
+                        } else if (t.estado_cita === 'ATENDIDA') {
+                            estadoBadge = '<span class="badge bg-primary">Atendido</span>';
+                        } else {
+                            estadoBadge = '<span class="badge bg-warning text-dark">Reservado</span>';
+                        }
+                    }
+
+                    tr.innerHTML = `
+                <td class="fw-semibold">${t.fecha.split('T')[0]}</td>
+                <td>${t.hora_inicio}</td>
+                <td>${t.hora_fin}</td>
+                <td class="text-center">${estadoBadge}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarTurno(${t.id || t.horario_id}, this)" title="Eliminar">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            `;
+                    tbodyModal.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error("Error al abrir gestión de horarios:", err);
+                tbodyModal.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">Error al conectar con la base de datos.</td></tr>';
+            }
+        }
+        // Dentro de tu función que maneja el botón de eliminar en admin.html:
+        // Variable global temporal para guardar el ID y el botón que se van a eliminar
+        let turnoAEliminar = null;
+        let elementoBtnAEliminar = null;
+
+        function eliminarTurno(id, btnElement) {
+            turnoAEliminar = id;
+            elementoBtnAEliminar = btnElement;
+
+            // Personalizamos el texto de tu modal de confirmación si lo deseas
+            document.getElementById('mensajeConfirmacionTexto').textContent = "¿Está seguro de desactivar este turno?";
+
+            // Mostramos tu modal personalizado de Bootstrap
+            const modalConfirm = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
+            modalConfirm.show();
+        }
+
+        // Y conectamos el botón de confirmación de tu modal (asegúrate de llamarlo una sola vez al cargar la página o dentro de tus scripts iniciales)
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnConfirmar = document.getElementById('btnConfirmarAccion');
+            if (btnConfirmar) {
+                btnConfirmar.onclick = async function () {
+                    // Ocultamos el modal de confirmación
+                    const modalEl = bootstrap.Modal.getInstance(document.getElementById('modalConfirmacion'));
+                    if (modalEl) modalEl.hide();
+
+                    if (!turnoAEliminar) return;
+
+                    try {
+                        const res = await fetch(`${API_URL}/api/horarios/${turnoAEliminar}`, {
+                            method: 'DELETE'
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            mostrarToast("¡Turno desactivado correctamente!", "success");
+
+                            if (elementoBtnAEliminar) {
+                                const tr = elementoBtnAEliminar.closest('tr');
+                                tr.remove();
+                            }
+
+                            const hActual = document.getElementById('filtroHospitalAgendas').value;
+                            const espActual = document.getElementById('filtroEspecialidadAgendas').value;
+                            if (hActual) cargarMedicosAgendas(hActual, espActual);
+                        } else {
+                            mostrarToast(data.error || "No se pudo eliminar el turno.", "danger");
+                        }
+                    } catch (err) {
+                        console.error("Error al eliminar el turno:", err);
+                        mostrarToast("Error al conectar con el servidor.", "danger");
+                    }
+                };
+            }
+        });
+        function mostrarConfirmacionPersonalizada(mensaje, callbackAccion) {
+            // Si aún no tienes el HTML del modal en admin.html, asegúrate de agregarlo también al final del body
+            const textoEl = document.getElementById('mensajeConfirmacionTexto');
+            if (textoEl) textoEl.innerText = mensaje;
+
+            const modalEl = document.getElementById('modalConfirmacion');
+            if (!modalEl) {
+                // Fallback por si acaso el modal HTML no está en admin.html
+                if (confirm(mensaje)) {
+                    callbackAccion();
+                }
+                return;
+            }
+
+            modalEl.style.display = 'block';
+            modalEl.classList.add('show');
+            modalEl.style.backgroundColor = 'rgba(0,0,0,0.5)';
+
+            const btnConfirmar = document.getElementById('btnConfirmarAccion');
+            if (btnConfirmar) {
+                const nuevoBtn = btnConfirmar.cloneNode(true);
+                btnConfirmar.parentNode.replaceChild(nuevoBtn, btnConfirmar);
+
+                document.getElementById('btnConfirmarAccion').onclick = async () => {
+                    modalEl.style.display = 'none';
+                    modalEl.classList.remove('show');
+
+                    if (typeof callbackAccion === 'function') {
+                        await callbackAccion();
+                    }
+                };
+            }
+        }
+
+        document.getElementById('filtroHospitalAgendas').addEventListener('change', function () {
+            actualizarFiltrosAgendas();
+        });
+
+        async function alternarEstado(btn, especialidadId) {
+            const fila = btn.closest('tr');
+            const badge = fila.querySelector('.estado-badge');
+            const hospitalId = document.getElementById('selectHospitalAdmin').value;
+
+            const esActivoActual = badge.classList.contains('bg-success');
+            const nuevoEstadoTexto = esActivoActual ? 'Deshabilitado' : 'Habilitado';
+
+            try {
+                const res = await fetch(`${API_URL}/api/establecimientos/${hospitalId}/especialidades/${especialidadId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ estado: nuevoEstadoTexto })
+                });
+                const data = await res.json();
+
+                // Verificamos si la respuesta fue exitosa sin importar si viene como true o si el servidor respondió bien
+                if (res.ok) {
+                    if (nuevoEstadoTexto === 'Habilitado') {
+                        badge.className = 'badge bg-success px-3 py-2 estado-badge';
+                        badge.textContent = 'Habilitado';
+                        btn.className = 'btn btn-sm btn-outline-danger fw-bold px-3 btn-accion';
+                        btn.textContent = 'Deshabilitar';
+                        mostrarToast("¡Especialidad habilitada con éxito!", "success");
+                    } else {
+                        badge.className = 'badge bg-danger px-3 py-2 estado-badge';
+                        badge.textContent = 'Deshabilitado';
+                        btn.className = 'btn btn-sm btn-outline-success fw-bold px-3 btn-accion';
+                        btn.textContent = 'Habilitar';
+                        mostrarToast("¡Especialidad deshabilitada con éxito!", "success");
+                    }
+                } else {
+                    mostrarToast(data.error || "No se pudo actualizar el estado.", "danger");
+                }
+            } catch (err) {
+                console.error("Error al conectar:", err);
+                mostrarToast("Error al conectar con el servidor.", "danger");
+            }
+        }
+
+        // Abrir el modal de registro y poblar los hospitales
+        function abrirModalNuevoMedico() {
+            const selectHosp = document.getElementById('medHosp');
+            selectHosp.innerHTML = '<option value="">Seleccione un hospital...</option>';
+            hospitalesAdmin.forEach(h => {
+                selectHosp.innerHTML += `<option value="${h.id}">${h.nombre}</option>`;
+            });
+            document.getElementById('medNombres').value = '';
+            document.getElementById('medApellidos').value = '';
+            document.getElementById('medEsp').innerHTML = '<option value="">Seleccione primero un hospital...</option>';
+
+            const modal = new bootstrap.Modal(document.getElementById('modalNuevoMedico'));
+            modal.show();
+        }
+
+        function abrirModalNuevoHorario() {
+            const selectHosp = document.getElementById('horHosp');
+            selectHosp.innerHTML = '<option value="">Seleccione un hospital...</option>';
+            hospitalesAdmin.forEach(h => {
+                selectHosp.innerHTML += `<option value="${h.id}">${h.nombre}</option>`;
+            });
+
+            // 👉 Limpiamos los campos uno por uno de forma segura:
+            document.getElementById('horFecha').value = '';
+            document.getElementById('horInicio').value = '';
+            document.getElementById('horFin').value = '';
+            document.getElementById('horEsp').innerHTML = '<option value="">Seleccione primero un hospital...</option>';
+            document.getElementById('horMedicoId').innerHTML = '<option value="">Seleccione primero una especialidad...</option>';
+
+            // Abrimos el modal correctamente
+            new bootstrap.Modal(document.getElementById('modalNuevoHorario')).show();
+        }
+
+        async function cargarEspecialidadesAdmin() {
+            const hospId = document.getElementById('selectHospitalAdmin').value;
+            if (!hospId) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/establecimientos/${hospId}/especialidades`);
+                const especialidades = await res.json();
+                const tbody = document.getElementById('tablaEspecialidades');
+                tbody.innerHTML = '';
+
+                if (especialidades.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay especialidades registradas.</td></tr>';
+                    return;
+                }
+
+                const espUnicas = [];
+                const idsVistos = new Set();
+                especialidades.forEach(esp => {
+                    if (!idsVistos.has(esp.id)) {
+                        idsVistos.add(esp.id);
+                        espUnicas.push(esp);
+                    }
+                });
+
+                espUnicas.forEach(esp => {
+                    const tr = document.createElement('tr');
+
+                    const esActivo = esp.estado === 'Habilitado' || !esp.estado;
+                    const badgeClass = esActivo ? 'bg-success' : 'bg-danger';
+                    const badgeText = esActivo ? 'Habilitado' : 'Deshabilitado';
+                    const btnClass = esActivo ? 'btn-outline-danger' : 'btn-outline-success';
+                    const btnText = esActivo ? 'Deshabilitar' : 'Habilitar';
+
+                    tr.innerHTML = `
+                <td>
+                    <span class="fs-5 me-2">${esp.icono || '🩺'}</span> 
+                    <span class="fw-bold">${esp.nombre}</span>
+                </td>
+                <td class="text-muted small">${esp.descripcion || 'Servicio médico'}</td>
+                <td class="text-center">
+                    <span class="badge ${badgeClass} px-3 py-2 estado-badge">${badgeText}</span>
+                </td>
+                <td class="text-end">
+                    <button class="btn btn-sm ${btnClass} fw-bold px-3 btn-accion" onclick="alternarEstado(this, ${esp.id})">
+                        ${btnText}
+                    </button>
+                </td>
+            `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error al cargar especialidades:", err);
+            }
+        }
+        async function cargarMedicosPorEspecialidad(espId) {
+            const hospId = document.getElementById('horHosp').value;
+            const selectMed = document.getElementById('horMedicoId');
+            selectMed.innerHTML = '<option value="">Cargando médicos...</option>';
+
+            if (!espId || !hospId) {
+                selectMed.innerHTML = '<option value="">Seleccione primero una especialidad...</option>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades/${espId}/medicos-lista`);
+                const medicos = await res.json();
+
+                selectMed.innerHTML = '<option value="">Seleccione un médico...</option>';
+
+                if (!medicos || medicos.length === 0) {
+                    selectMed.innerHTML = '<option value="">No hay médicos registrados en esta especialidad</option>';
+                    return;
+                }
+
+                medicos.forEach(m => {
+                    selectMed.innerHTML += `<option value="${m.id}">${m.nombre_completo}</option>`;
+                });
+            } catch (err) {
+                console.error("Error al cargar médicos:", err);
+                selectMed.innerHTML = '<option value="">Error al cargar médicos</option>';
+            }
+        }
+
+        // Función para enviar los datos al backend (puedes adaptarla según tus endpoints de inserción)
+        async function guardarMedicoUnico() {
+            const establecimiento_id = document.getElementById('medHosp').value;
+            const especialidad_id = document.getElementById('medEsp').value;
+            const nombres = document.getElementById('medNombres').value.trim();
+            const apellidos = document.getElementById('medApellidos').value.trim();
+
+            if (!establecimiento_id || !especialidad_id || !nombres || !apellidos) {
+                mostrarToast("Por favor, complete todos los campos obligatorios.", "danger");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/medicos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombres, apellidos, establecimiento_id, especialidad_id })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    // 👉 Mensaje personalizado para el médico
+                    mostrarToast("¡Médico registrado con éxito!", "success");
+
+                    bootstrap.Modal.getInstance(document.getElementById('modalNuevoMedico')).hide();
+                    const hActual = document.getElementById('filtroHospitalAgendas').value;
+                    const espActual = document.getElementById('filtroEspecialidadAgendas').value;
+                    if (hActual) cargarMedicosAgendas(hActual, espActual);
+                }
+            } catch (err) {
+                console.error(err);
+                mostrarToast("Error al conectar con el servidor.", "danger");
+            }
+        }
+
+        async function guardarHorarioUnico() {
+            const medico_id = document.getElementById('horMedicoId').value;
+            const fecha = document.getElementById('horFecha').value;
+            const hora_inicio = document.getElementById('horInicio').value;
+            const hora_fin = document.getElementById('horFin').value;
+
+            if (!medico_id || !fecha || !hora_inicio || !hora_fin) {
+                mostrarToast("Por favor, complete todos los campos del horario.", "danger");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/horarios`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ medico_id, fecha, hora_inicio, hora_fin })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    // 👉 Mensaje personalizado para el horario
+                    mostrarToast("¡Horario asignado al médico con éxito!", "success");
+
+                    bootstrap.Modal.getInstance(document.getElementById('modalNuevoHorario')).hide();
+                    const hActual = document.getElementById('filtroHospitalAgendas').value;
+                    const espActual = document.getElementById('filtroEspecialidadAgendas').value;
+                    if (hActual) cargarMedicosAgendas(hActual, espActual);
+                }
+            } catch (err) {
+                console.error(err);
+                mostrarToast("Error al conectar con el servidor.", "danger");
+            }
+        }
+
+        function cerrarSesionAdmin() {
+            localStorage.removeItem('adminLogueado');
+            window.location.href = 'index.html';
+        }
+        async function cargarMetricasDashboard() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/metricas`);
+                const data = await res.json();
+
+                document.getElementById('statCitas').innerText = data.citas_activas ?? 0;
+                document.getElementById('statMedicos').innerText = data.total_medicos ?? 0;
+                document.getElementById('statPacientes').innerText = data.total_pacientes ?? 0;
+                document.getElementById('statHospitales').innerText = data.total_hospitales ?? 0;
+            } catch (err) {
+                console.error("Error al cargar las métricas:", err);
+            }
+        }
+        async function cargarCitasRecientes() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/citas-recientes`);
+                const citas = await res.json();
+                const tbody = document.getElementById('tablaCitasRecientesBody');
+                tbody.innerHTML = '';
+
+                if (!citas || citas.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No hay reservas recientes en el sistema.</td></tr>`;
+                    return;
+                }
+
+                citas.forEach(c => {
+                    tbody.innerHTML += `
+                <tr>
+                    
+                    <td>${c.paciente_nombre}</td>
+                    <td>${c.especialidad_name}</td>
+                    <td>${c.establecimiento_name}</td>
+                    <td><span class="badge bg-success">${c.estado}</span></td>
+                </tr>
+            `;
+                });
+            } catch (err) {
+                console.error("Error al cargar citas recientes:", err);
+            }
+        }
+        function mostrarMensajeBonito(texto) {
+            document.getElementById('toastMensaje').textContent = texto;
+            const toastEl = document.getElementById('toastExito');
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 }); // Se oculta solo en 3 segundos
+            toast.show();
+        }
+        function mostrarToast(mensaje, tipo = 'success') {
+            const toastMensaje = document.getElementById('toastMensaje');
+            const toastEl = document.getElementById('toastExito');
+
+            // Cambiamos el color según el tipo (success para verde, danger para rojo/error)
+            toastEl.className = `toast align-items-center text-white bg-${tipo} border-0`;
+            toastMensaje.textContent = mensaje;
+
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+        }
+
+
+        async function cargarGraficoEspecialidades() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/grafico-especialidades`);
+                const resultados = await res.json();
+
+                const labels = resultados.map(r => r.especialidad_nombre);
+                const valores = resultados.map(r => r.total);
+
+                const ctxEsp = document.getElementById('graficoEspecialidades').getContext('2d');
+
+                // Destruye el gráfico anterior si ya existía para evitar errores de duplicidad
+                if (window.miGraficoDoughnut) {
+                    window.miGraficoDoughnut.destroy();
+                }
+
+                window.miGraficoDoughnut = new Chart(ctxEsp, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels.length > 0 ? labels : ['Sin datos'],
+                        datasets: [{
+                            data: valores.length > 0 ? valores : [1],
+                            backgroundColor: ['#004060', '#059669', '#f59e0b', '#dc3545', '#6f42c1']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            } catch (err) {
+                console.error("Error al cargar gráfico de especialidades:", err);
+            }
+        }
+        async function cargarDashboardPro() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/dashboard-completo`);
+                const data = await res.json();
+
+                // 1. Actualizar Tarjetas
+                // 1. Actualizar Tarjetas
+                document.getElementById('statProg').innerText = data.tarjetas.programadas; // Muestra el total (ej: 20)
+                document.getElementById('statProgSub').innerText = `${data.tarjetas.activas} cita(s) activa(s) en este momento.`; // Muestra las activas reales (ej: 5)
+
+                document.getElementById('statAten').innerText = data.tarjetas.atendidas;
+                document.getElementById('statAtenSub').innerText = `${data.tarjetas.pctAtendidas}% del total de citas.`;
+
+                document.getElementById('statCanc').innerText = data.tarjetas.canceladas;
+                document.getElementById('statCancSub').innerText = `${data.tarjetas.pctCanceladas}% del total de citas.`;
+
+                document.getElementById('statInas').innerText = `${data.tarjetas.tasaInasistencia}%`;
+                document.getElementById('statInasSub').innerText = `${data.tarjetas.inasistencias} inasistencia(s) registrada(s).`;
+
+                // 2. Gráfico de Barras (Citas por Especialidad)
+                const labelsEsp = data.porEspecialidad.map(e => e.especialidad_nombre);
+                const valoresEsp = data.porEspecialidad.map(e => e.total);
+
+                const ctxBarras = document.getElementById('graficoCitas').getContext('2d');
+                if (window.miGraficoBarras) window.miGraficoBarras.destroy();
+
+                window.miGraficoBarras = new Chart(ctxBarras, {
+                    type: 'bar',
+                    data: {
+                        labels: labelsEsp.length > 0 ? labelsEsp : ['Sin datos'],
+                        datasets: [{
+                            label: 'Citas Registradas',
+                            data: valoresEsp.length > 0 ? valoresEsp : [0],
+                            backgroundColor: '#004060',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // 3. Gráfico Circular (Distribución por Estado)
+                const dist = data.distribucionEstados;
+                const ctxEsp = document.getElementById('graficoEspecialidades').getContext('2d');
+                if (window.miGraficoDoughnut) window.miGraficoDoughnut.destroy();
+
+                window.miGraficoDoughnut = new Chart(ctxEsp, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Reservadas', 'Reprogramadas', 'Atendidas', 'Canceladas', 'Inasistencias'],
+                        datasets: [{
+                            data: [dist.reservadas, dist.reprogramadas, dist.atendidas, dist.canceladas, dist.inasistencias],
+                            backgroundColor: ['#004060', '#f59e0b', '#059669', '#dc2626', '#6f42c1']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+
+            } catch (err) {
+                console.error("Error al cargar el dashboard pro:", err);
+            }
+        }
+
+        // Asegúrate de llamarlo al iniciar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarDashboardPro();
+        });
+        async function registrarUsuarioAdmin(e) {
+            e.preventDefault(); // <--- Esto evita que la página se recargue
+
+            const nombres = document.getElementById('adminRegNombres').value.trim();
+            const dni = document.getElementById('adminRegDni').value.trim();
+            const correo = document.getElementById('adminRegCorreo').value.trim();
+            const password = document.getElementById('adminRegPassword').value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/registro`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombres, dni, correo, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    mostrarAlertaModal("¡Registro Exitoso!", "El usuario ha sido registrado correctamente en el sistema.", false);
+                    document.getElementById('formAdminRegistro').reset();
+                } else {
+                    mostrarAlertaModal("Error", data.mensaje || "No se pudo registrar el usuario.", true);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error de conexión con el servidor.');
+            }
+        }
+        function mostrarAlertaModal(titulo, mensaje, esError = true) {
+            document.getElementById('tituloAlertaModal').innerText = titulo;
+            document.getElementById('mensajeAlertaModal').innerText = mensaje;
+
+            const icono = document.getElementById('iconoAlertaModal');
+            if (esError) {
+                icono.className = "mb-3 text-danger";
+                icono.innerHTML = '<i class="bi bi-exclamation-triangle-fill display-3"></i>';
+            } else {
+                icono.className = "mb-3 text-success";
+                icono.innerHTML = '<i class="bi bi-check-circle-fill display-3"></i>';
+            }
+
+            const modalAlerta = new bootstrap.Modal(document.getElementById('modalAlertaSistema'));
+            modalAlerta.show();
+        }
+    </script>
+</body>
+
+</html>

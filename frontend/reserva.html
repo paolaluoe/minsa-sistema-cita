@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Inclusivo de Citas Médicas - MINSA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/reserva.css">
+    <style>
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .calendar-day {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 4px;
+            text-align: center;
+            cursor: pointer;
+            background: #fff;
+            transition: all 0.2s;
+            min-height: 55px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .calendar-day:hover {
+            border-color: #004060;
+            background-color: #f8fafc;
+        }
+
+        .calendar-day.selected {
+            background-color: #002B40 !important;
+            color: white !important;
+            border-color: #002B40 !important;
+        }
+
+        .calendar-day.selected .text-muted,
+        .calendar-day.selected small {
+            color: #e2e8f0 !important;
+        }
+
+        .dot-available {
+            height: 5px;
+            width: 5px;
+            background-color: #059669;
+            border-radius: 50%;
+            display: inline-block;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body onload="inicializarReserva()">
+
+    <!-- Header MINSA con barra de accesibilidad integrada -->
+    <header class="minsa-bar d-flex justify-content-between align-items-center px-4 py-3 flex-wrap gap-2"
+        style="background-color: #002B40;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="logo-m bg-white text-primary fw-bold rounded p-1 px-2" style="font-size: 1.2rem;">M</div>
+            <div>
+                <h1 class="h6 mb-0 fw-bold text-white">Ministerio de Salud</h1>
+                <p class="mb-0 text-white-50 small" style="font-size: 0.75rem;">Sistema Inclusivo de Citas Médicas</p>
+            </div>
+        </div>
+
+        <!-- Controles de Accesibilidad Globales -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button onclick="alternarAltoContraste()" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold"
+                style="font-size: 0.8rem;">
+                <i class="fa-solid fa-circle-half-stroke me-1"></i> Alto contraste
+            </button>
+            <button onclick="alternarTextoGrande()"
+                class="btn btn-sm btn-warning rounded-pill px-3 fw-semibold text-dark" style="font-size: 0.8rem;">
+                <i class="fa-solid fa-text-height me-1"></i> A+ Texto grande
+            </button>
+            <button onclick="escucharPagina()" id="btnAudio"
+                class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold" style="font-size: 0.8rem;">
+                <i class="fa-solid fa-volume-high me-1"></i> Escuchar página
+            </button>
+
+            <span class="text-white-50">|</span>
+
+            <span class="text-white small fw-semibold"><i class="fa-solid fa-user me-1"></i> <span
+                    id="lblPacienteNombre">Paciente</span></span>
+
+            <button onclick="verMisCitas()" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">
+                <i class="fa-solid fa-calendar-check me-1"></i> Mis Citas
+            </button>
+
+            <button onclick="cerrarSesion()" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">Cerrar
+                Sesión</button>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="container my-4" style="max-width: 900px;">
+
+        <!-- Indicador de Pasos -->
+        <div class="d-flex justify-content-center align-items-center mb-4 text-center">
+            <div class="px-3">
+                <div id="stepCircle1"
+                    class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold"
+                    style="width: 30px; height: 30px; font-size: 0.85rem;">1</div>
+                <div id="stepText1" class="small fw-bold text-primary mt-1">Especialidad</div>
+            </div>
+            <div id="stepLine1" style="width: 50px; height: 2px; background-color: #cbd5e1;"></div>
+            <div class="px-3">
+                <div id="stepCircle2"
+                    class="rounded-circle bg-light border text-muted d-inline-flex align-items-center justify-content-center fw-bold"
+                    style="width: 30px; height: 30px; font-size: 0.85rem;">2</div>
+                <div id="stepText2" class="small fw-bold text-muted mt-1">Horario</div>
+            </div>
+            <div id="stepLine2" style="width: 50px; height: 2px; background-color: #cbd5e1;"></div>
+            <div class="px-3 text-muted">
+                <div id="stepCircle3"
+                    class="rounded-circle bg-light border text-muted d-inline-flex align-items-center justify-content-center fw-bold"
+                    style="width: 30px; height: 30px; font-size: 0.85rem;">3</div>
+                <div id="stepText3" class="small fw-bold text-muted mt-1">Confirmación</div>
+            </div>
+        </div>
+
+        <div class="card card-reserva p-4 p-md-5 border-0 shadow-sm rounded-4">
+
+            <!-- VISTA 1: HOSPITAL Y ESPECIALIDAD -->
+            <div id="vistaPaso1">
+                <div class="mb-3">
+                    <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">PASO
+                        1 DE 3</span>
+                    <h2 class="h4 fw-bold text-dark mb-1">¿Dónde desea atenderse?</h2>
+                    <p class="text-muted small">Seleccione el centro de salud y la especialidad médica que necesita.</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary">Centro de salud</label>
+                    <select id="selectHospital" class="form-select fw-semibold"
+                        onchange="cambiarHospitalSeleccionado()">
+                        <!-- Dinámico -->
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <div class="ratio ratio-21x9 rounded overflow-hidden border shadow-sm">
+                        <iframe id="iframeMapa" src="" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                    <div id="lblDireccionHospital" class="text-muted small mt-2"><i
+                            class="fa-solid fa-location-dot text-danger me-1"></i> Cargando ubicación...</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-secondary mb-3">Especialidad médica</label>
+                    <div id="contenedorEspecialidades" class="row g-3">
+                        <!-- Dinámico -->
+                    </div>
+                    <input type="hidden" id="especialidadSeleccionadaId" required>
+                </div>
+
+                <button type="button" onclick="irAVistaHorarios()" class="btn btn-primary w-100 fw-bold py-3 shadow-sm"
+                    style="background-color: #0056b3; border: none;">
+                    Ver horarios <i class="fa-solid fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+
+            <!-- VISTA 2: CALENDARIO MENSUAL Y TURNOS -->
+            <div id="vistaPaso2" class="d-none">
+                <div class="mb-3">
+                    <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">PASO
+                        2 DE 3</span>
+                    <h2 class="h4 fw-bold text-dark mb-1">Elija una fecha y hora</h2>
+                    <p class="text-muted small">Horarios para <strong id="lblNombreEspecialidad"
+                            class="text-primary">Especialidad</strong> en <span
+                            id="lblNombreHospitalText">Hospital</span>.</p>
+                </div>
+
+                <div class="card border rounded-3 p-3 mb-4 shadow-sm bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+                        <h5 class="fw-bold text-dark mb-0">Noviembre 2026</h5>
+                        <small class="text-muted" id="lblEspecialidadCardLabel">Especialidad</small>
+                    </div>
+
+                    <div class="row text-center fw-bold text-muted small mb-2" style="font-size: 0.75rem;">
+                        <div class="col">Lun</div>
+                        <div class="col">Mar</div>
+                        <div class="col">Mié</div>
+                        <div class="col">Jue</div>
+                        <div class="col">Vie</div>
+                        <div class="col">Sáb</div>
+                        <div class="col">Dom</div>
+                    </div>
+
+                    <div class="calendar-grid mb-2" id="grillaCalendario">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary small mb-2"
+                        id="lblTituloHorariosDisponibles">Horarios disponibles</label>
+                    <div id="contenedorHorariosDia" class="row g-3">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+
+                <input type="hidden" id="inputHorarioId" required>
+                <input type="hidden" id="inputFecha" required>
+                <input type="hidden" id="inputHora" required>
+                <input type="hidden" id="inputMedico" required>
+
+                <div class="d-flex gap-2">
+                    <button type="button" onclick="regresarAPaso1()"
+                        class="btn btn-outline-secondary w-50 fw-bold py-3">
+                        <i class="fa-solid fa-arrow-left me-2"></i> Volver
+                    </button>
+                    <button type="button" onclick="irAVistaConfirmacion()"
+                        class="btn btn-primary w-50 fw-bold py-3 shadow-sm"
+                        style="background-color: #0056b3; border: none;">
+                        Revisar cita <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- VISTA 3: CONFIRMACIÓN Y ADVERTENCIA -->
+            <div id="vistaPaso3" class="d-none">
+                <div class="mb-4">
+                    <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">PASO
+                        3 DE 3</span>
+                    <h2 class="h4 fw-bold text-dark mb-1">Revise los datos de su cita</h2>
+                    <p class="text-muted small">Confirme que toda la información sea correcta.</p>
+                </div>
+
+                <div class="card border rounded-3 p-4 mb-4 shadow-sm position-relative bg-white">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                        <div>
+                            <span class="text-muted small d-block" style="font-size: 0.75rem;">Cita médica</span>
+                            <h5 id="resumenEspecialidad" class="fw-bold text-dark mb-0">Especialidad</h5>
+                        </div>
+                        <span class="badge text-dark px-3 py-2 fw-semibold"
+                            style="font-size: 0.75rem; background-color: #fef08a !important;">Por confirmar</span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <span class="text-muted small d-block" style="font-size: 0.75rem;">Paciente</span>
+                            <span id="resumenPaciente" class="fw-semibold text-dark">Nombre</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block" style="font-size: 0.75rem;">DNI</span>
+                            <span id="resumenDni" class="fw-semibold text-dark">DNI</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 border-top pt-3">
+                        <span class="text-muted small d-block" style="font-size: 0.75rem;">Centro de salud</span>
+                        <span id="resumenHospital" class="fw-semibold text-dark">Hospital</span>
+                    </div>
+
+                    <div class="row g-3 mb-3 border-top pt-3">
+                        <div class="col-6">
+                            <span class="text-muted small d-block" style="font-size: 0.75rem;">Fecha</span>
+                            <span id="resumenFecha" class="fw-semibold text-dark">Fecha</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block" style="font-size: 0.75rem;">Hora</span>
+                            <span id="resumenHora" class="fw-semibold text-dark">Hora</span>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <span class="text-muted small d-block" style="font-size: 0.75rem;">Médico</span>
+                        <span id="resumenMedico" class="fw-semibold text-dark">Médico</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="fa-solid fa-triangle-exclamation text-warning fs-5"></i>
+                    <span><strong>Aviso importante:</strong> Por favor, acérquese al establecimiento de salud de
+                        <strong>10 a 15 minutos antes</strong> de su cita programada.</span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" onclick="regresarAPaso2()"
+                        class="btn btn-outline-secondary w-50 fw-bold py-3">
+                        Cambiar horario
+                    </button>
+                    <button type="button" onclick="ejecutarReservaFinal()"
+                        class="btn btn-success w-50 fw-bold py-3 shadow-sm"
+                        style="background-color: #047857; border: none;">
+                        <i class="fa-solid fa-check me-2"></i> Confirmar cita
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Mis Citas -->
+    <div id="modalMisCitas" class="modal" tabindex="-1" style="display: none; background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content p-4 rounded-4 shadow bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <h5 class="fw-bold text-dark m-0"><i class="fa-solid fa-calendar-days text-primary me-2"></i>Mis
+                        Citas Médicas Reservadas</h5>
+                    <button type="button" onclick="cerrarModalCitas()" class="btn-close"></button>
+                </div>
+                <div id="listaMisCitasContainer" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Cargado dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de Confirmación Personalizado -->
+    <div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3 text-warning fs-1">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">¿Estás seguro?</h5>
+                    <p class="text-muted small mb-4" id="mensajeConfirmacionTexto">¿Deseas cancelar esta cita médica? El
+                        horario quedará libre nuevamente.</p>
+                    <div class="d-flex justify-content-center gap-2">
+
+                        <!-- 🔍 AQUÍ ES EXACTAMENTE DONDE DEBES REEMPLAZAR EL BOTÓN -->
+                        <button type="button" class="btn btn-light px-4 rounded-pill fw-semibold"
+                            onclick="cerrarModalConfirmacion()">Conservar cita</button>
+
+                        <button type="button" id="btnConfirmarAccion"
+                            class="btn btn-danger px-4 rounded-pill fw-semibold">Sí, cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 text-muted small border-top bg-white mt-auto">
+        <p class="mb-0">© 2026 Ministerio de Salud del Perú - Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Lógica JavaScript -->
+    <script>
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : 'https://tu-backend-real.onrender.com';
+
+        let pacienteDni = '';
+        let pacienteNombre = '';
+        let listaHospitalesGlobal = [];
+        let listaEspecialidadesActuales = [];
+        let horariosDisponiblesGlobal = [];
+
+        function inicializarReserva() {
+            pacienteDni = localStorage.getItem('pacienteDni');
+            pacienteNombre = localStorage.getItem('pacienteNombre');
+
+            if (!pacienteDni) {
+                alert('Por favor inicie sesión primero.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('lblPacienteNombre').textContent = pacienteNombre || 'Paciente';
+            cargarHospitalesSelect();
+        }
+
+        async function cargarHospitalesSelect() {
+            try {
+                const res = await fetch(`${API_URL}/api/establecimientos`);
+                listaHospitalesGlobal = await res.json();
+                const select = document.getElementById('selectHospital');
+                select.innerHTML = '';
+
+                listaHospitalesGlobal.forEach(h => {
+                    const opt = document.createElement('option');
+                    opt.value = h.id;
+                    opt.textContent = h.nombre;
+                    select.appendChild(opt);
+                });
+
+                if (listaHospitalesGlobal.length > 0) cambiarHospitalSeleccionado();
+            } catch (err) { console.error(err); }
+        }
+
+        function cambiarHospitalSeleccionado() {
+            const hospId = document.getElementById('selectHospital').value;
+            const hospital = listaHospitalesGlobal.find(h => h.id == hospId);
+
+            if (hospital) {
+                document.getElementById('iframeMapa').src = hospital.mapa_url;
+                document.getElementById('lblDireccionHospital').innerHTML = `<i class="fa-solid fa-location-dot text-danger me-1"></i> ${hospital.direccion}`;
+                cargarEspecialidadesGrid(hospId);
+            }
+        }
+
+        async function cargarEspecialidadesGrid(hospId) {
+            try {
+                const res = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades`);
+                listaEspecialidadesActuales = await res.json();
+                const contenedor = document.getElementById('contenedorEspecialidades');
+                contenedor.innerHTML = '';
+                document.getElementById('especialidadSeleccionadaId').value = '';
+
+                if (listaEspecialidadesActuales.length === 0) {
+                    contenedor.innerHTML = '<div class="col-12 text-center text-danger small py-3">No hay especialidades habilitadas en este hospital actualmente.</div>';
+                    return;
+                }
+
+                const especialidadesUnicas = [];
+                const idsVistos = new Set();
+                listaEspecialidadesActuales.forEach(esp => {
+                    if (!idsVistos.has(esp.id)) {
+                        idsVistos.add(esp.id);
+                        especialidadesUnicas.push(esp);
+                    }
+                });
+
+                especialidadesUnicas.forEach((esp, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'col-md-4';
+                    if (index === 0) document.getElementById('especialidadSeleccionadaId').value = esp.id;
+
+                    div.innerHTML = `
+                        <div class="card p-3 h-100 text-center especialidad-card ${index === 0 ? 'selected border-primary bg-light' : 'border'}" 
+                             id="esp-${esp.id}" onclick="seleccionarEspecialidad(${esp.id})" style="cursor: pointer; transition: all 0.2s;">
+                            <span class="fs-3 mb-2 d-block">${esp.icono || '🩺'}</span>
+                            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.9rem;">${esp.nombre}</h6>
+                            <span class="badge ${index === 0 ? 'bg-primary' : 'bg-secondary'} mt-2" id="badge-${esp.id}">
+                                ${index === 0 ? '✓ Seleccionado' : 'Seleccionar'}
+                            </span>
+                        </div>
+                    `;
+                    contenedor.appendChild(div);
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        function seleccionarEspecialidad(id) {
+            document.getElementById('especialidadSeleccionadaId').value = id;
+            document.querySelectorAll('.especialidad-card').forEach(c => {
+                c.classList.remove('selected', 'border-primary', 'bg-light');
+                c.classList.add('border');
+            });
+            document.querySelectorAll('.badge').forEach(b => {
+                b.className = 'badge bg-secondary';
+                b.textContent = 'Seleccionar';
+            });
+
+            const cardSelect = document.getElementById(`esp-${id}`);
+            const badgeSelect = document.getElementById(`badge-${id}`);
+
+            if (cardSelect) {
+                cardSelect.classList.add('selected', 'border-primary', 'bg-light');
+                cardSelect.classList.remove('border');
+            }
+            if (badgeSelect) {
+                badgeSelect.className = 'badge bg-primary';
+                badgeSelect.textContent = '✓ Seleccionado';
+            }
+        }
+        // ==========================================
+        // FUNCIONES DE NAVEGACIÓN Y BARRA DE PASOS
+        // ==========================================
+
+        function actualizarIndicadorPasos(pasoActual) {
+            const c1 = document.getElementById('stepCircle1');
+            const t1 = document.getElementById('stepText1');
+            const l1 = document.getElementById('stepLine1');
+
+            const c2 = document.getElementById('stepCircle2');
+            const t2 = document.getElementById('stepText2');
+            const l2 = document.getElementById('stepLine2');
+
+            const c3 = document.getElementById('stepCircle3');
+            const t3 = document.getElementById('stepText3');
+
+            if (!c1 || !c2 || !c3) return;
+
+            // Restablecer estilos
+            c1.className = "rounded-circle bg-light border text-muted d-inline-flex align-items-center justify-content-center fw-bold";
+            c2.className = "rounded-circle bg-light border text-muted d-inline-flex align-items-center justify-content-center fw-bold";
+            c3.className = "rounded-circle bg-light border text-muted d-inline-flex align-items-center justify-content-center fw-bold";
+
+            t1.className = "small fw-bold text-muted mt-1";
+            t2.className = "small fw-bold text-muted mt-1";
+            t3.className = "small fw-bold text-muted mt-1";
+
+            if (l1) l1.style.backgroundColor = "#cbd5e1";
+            if (l2) l2.style.backgroundColor = "#cbd5e1";
+
+            c1.innerHTML = "1";
+            c2.innerHTML = "2";
+            c3.innerHTML = "3";
+
+            if (pasoActual === 1) {
+                c1.className = "rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold";
+                t1.className = "small fw-bold text-primary mt-1";
+            }
+            else if (pasoActual === 2) {
+                c1.className = "rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center fw-bold";
+                c1.innerHTML = '<i class="fa-solid fa-check"></i>';
+                t1.className = "small fw-bold text-success mt-1";
+                if (l1) l1.style.backgroundColor = "#059669";
+
+                c2.className = "rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold";
+                t2.className = "small fw-bold text-primary mt-1";
+            }
+            else if (pasoActual === 3) {
+                c1.className = "rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center fw-bold";
+                c1.innerHTML = '<i class="fa-solid fa-check"></i>';
+                t1.className = "small fw-bold text-success mt-1";
+                if (l1) l1.style.backgroundColor = "#059669";
+
+                c2.className = "rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center fw-bold";
+                c2.innerHTML = '<i class="fa-solid fa-check"></i>';
+                t2.className = "small fw-bold text-success mt-1";
+                if (l2) l2.style.backgroundColor = "#059669";
+
+                c3.className = "rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold";
+                t3.className = "small fw-bold text-primary mt-1";
+            }
+        }
+
+        async function irAVistaHorarios() {
+            const hospId = document.getElementById('selectHospital').value;
+            const espId = document.getElementById('especialidadSeleccionadaId').value;
+            if (!espId) {
+                alert('Debe seleccionar una especialidad médica.');
+                return;
+            }
+
+            const espObj = listaEspecialidadesActuales.find(e => e.id == espId);
+            const hospObj = listaHospitalesGlobal.find(h => h.id == hospId);
+
+            if (espObj) {
+                document.getElementById('lblNombreEspecialidad').textContent = espObj.nombre;
+                document.getElementById('lblEspecialidadCardLabel').textContent = `Especialidad: ${espObj.nombre}`;
+            }
+            if (hospObj) {
+                document.getElementById('lblNombreHospitalText').textContent = hospObj.nombre;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades/${espId}/medicos-horarios`);
+                horariosDisponiblesGlobal = await res.json();
+
+                construirCalendarioNoviembre2026();
+
+                document.getElementById('vistaPaso1').classList.add('d-none');
+                document.getElementById('vistaPaso2').classList.remove('d-none');
+
+                // Mueve la barra al Paso 2
+                actualizarIndicadorPasos(2);
+            } catch (err) {
+                console.error(err);
+                alert('Error al obtener los horarios de los médicos.');
+            }
+        }
+
+        function regresarAPaso1() {
+            document.getElementById('vistaPaso2').classList.add('d-none');
+            document.getElementById('vistaPaso1').classList.remove('d-none');
+            // Regresa la barra al Paso 1
+            actualizarIndicadorPasos(1);
+        }
+
+        function irAVistaConfirmacion() {
+            const horarioId = document.getElementById('inputHorarioId').value;
+            if (!horarioId) {
+                alert('Debe seleccionar un horario disponible.');
+                return;
+            }
+
+            const hospId = document.getElementById('selectHospital').value;
+            const hospitalObj = listaHospitalesGlobal.find(h => h.id == hospId);
+            const espId = document.getElementById('especialidadSeleccionadaId').value;
+            const espObj = listaEspecialidadesActuales.find(e => e.id == espId);
+            const fecha = document.getElementById('inputFecha').value;
+            const hora = document.getElementById('inputHora').value;
+            const medico = document.getElementById('inputMedico').value;
+
+            document.getElementById('resumenPaciente').textContent = pacienteNombre;
+            document.getElementById('resumenDni').textContent = pacienteDni;
+            document.getElementById('resumenHospital').textContent = hospitalObj ? hospitalObj.nombre : '';
+            document.getElementById('resumenEspecialidad').textContent = espObj ? espObj.nombre : '';
+            document.getElementById('resumenMedico').textContent = medico;
+            document.getElementById('resumenFecha').textContent = fecha;
+            document.getElementById('resumenHora').textContent = hora;
+
+            document.getElementById('vistaPaso2').classList.add('d-none');
+            document.getElementById('vistaPaso3').classList.remove('d-none');
+
+            // Mueve la barra al Paso 3
+            actualizarIndicadorPasos(3);
+        }
+
+        function regresarAPaso2() {
+            document.getElementById('vistaPaso3').classList.add('d-none');
+            document.getElementById('vistaPaso2').classList.remove('d-none');
+            // Regresa la barra al Paso 2
+            actualizarIndicadorPasos(2);
+        }
+
+        // ==========================================
+        // CALENDARIO Y SELECCIÓN DE TURNOS
+        // ==========================================
+
+        function construirCalendarioNoviembre2026() {
+            const grilla = document.getElementById('grillaCalendario');
+            grilla.innerHTML = '';
+
+            for (let i = 0; i < 6; i++) {
+                const emptyCol = document.createElement('div');
+                emptyCol.className = 'col text-muted py-2';
+                grilla.appendChild(emptyCol);
+            }
+
+            for (let dia = 1; dia <= 30; dia++) {
+                const diaStr = dia < 10 ? `0${dia}` : `${dia}`;
+                const fechaCompleta = `2026-11-${diaStr}`;
+
+                const tieneTurnos = horariosDisponiblesGlobal.some(h => h.fecha.startsWith(fechaCompleta));
+
+                const col = document.createElement('div');
+                col.className = 'col';
+                col.innerHTML = `
+                    <div class="calendar-day ${tieneTurnos ? '' : 'text-muted bg-light'}" id="dia-${fechaCompleta}" onclick="${tieneTurnos ? `seleccionarDiaCalendario('${fechaCompleta}')` : ''}">
+                        <div class="fw-bold">${dia}</div>
+                        ${tieneTurnos ? '<span class="dot-available"></span>' : '<small style="font-size:0.6rem">-</small>'}
+                    </div>
+                `;
+                grilla.appendChild(col);
+            }
+
+            const primerTurno = horariosDisponiblesGlobal[0];
+            if (primerTurno) {
+                const fechaYMD = primerTurno.fecha.split('T')[0];
+                seleccionarDiaCalendario(fechaYMD);
+            } else {
+                document.getElementById('contenedorHorariosDia').innerHTML = '<div class="col-12 text-center text-danger small py-2">No hay turnos disponibles.</div>';
+            }
+        }
+        function seleccionarDiaCalendario(fechaYMD) {
+            document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+            const el = document.getElementById(`dia-${fechaYMD}`);
+            if (el) el.classList.add('selected');
+
+            document.getElementById('inputFecha').value = fechaYMD;
+            document.getElementById('lblTituloHorariosDisponibles').textContent = `Horarios disponibles para el ${fechaYMD}`;
+
+            const turnosDelDia = horariosDisponiblesGlobal.filter(h => h.fecha.startsWith(fechaYMD));
+            const contenedor = document.getElementById('contenedorHorariosDia');
+            contenedor.innerHTML = '';
+
+            if (turnosDelDia.length === 0) {
+                contenedor.innerHTML = '<div class="col-12 text-center text-danger small py-2">No hay turnos disponibles para este día.</div>';
+                return;
+            }
+
+            turnosDelDia.forEach((h, index) => {
+                const div = document.createElement('div');
+                div.className = 'col-md-4';
+                const idHorario = h.horario_id || h.id;
+
+                if (index === 0) {
+                    document.getElementById('inputHorarioId').value = idHorario;
+                    document.getElementById('inputHora').value = `${h.hora_inicio} - ${h.hora_fin}`;
+                    document.getElementById('inputMedico').value = h.medico_nombre;
+                }
+
+                div.innerHTML = `
+                    <div class="card p-3 hora-card text-center ${index === 0 ? 'selected border-primary bg-light' : 'border'}" 
+                         id="horario-${idHorario}" 
+                         onclick="seleccionarHorarioModal(${idHorario}, '${h.fecha}', '${h.hora_inicio}', '${h.hora_fin}', '${h.medico_nombre}')" 
+                         style="cursor: pointer; transition: all 0.2s;">
+                        <i class="fa-regular fa-clock ${index === 0 ? 'text-primary' : 'text-muted'} fs-5 mb-1"></i>
+                        <h6 class="fw-bold text-dark mb-1" style="font-size: 0.85rem;">${h.hora_inicio}</h6>
+                        <p class="text-muted small mb-2" style="font-size: 0.75rem;"><i class="fa-solid fa-user-doctor me-1"></i>${h.medico_nombre}</p>
+                        <span class="badge ${index === 0 ? 'bg-primary' : 'bg-success'}" style="font-size: 0.65rem;">
+                            ${index === 0 ? '✓ Seleccionado' : 'Disponible'}
+                        </span>
+                    </div>
+                `;
+                contenedor.appendChild(div);
+            });
+        }
+        function seleccionarHorarioModal(horarioId, fecha, horaInicio, horaFin, medicoNombre) {
+            document.getElementById('inputHorarioId').value = horarioId;
+            if (fecha) document.getElementById('inputFecha').value = fecha;
+            document.getElementById('inputHora').value = `${horaInicio} - ${horaFin}`;
+            document.getElementById('inputMedico').value = medicoNombre;
+
+            document.querySelectorAll('.hora-card').forEach(c => {
+                c.classList.remove('selected', 'border-primary', 'bg-light');
+                c.classList.add('border');
+                const badge = c.querySelector('.badge');
+                if (badge) {
+                    badge.className = 'badge bg-success';
+                    badge.textContent = 'Disponible';
+                }
+            });
+
+            const cardSel = document.getElementById(`horario-${horarioId}`);
+            if (cardSel) {
+                cardSel.classList.add('selected', 'border-primary', 'bg-light');
+                cardSel.classList.remove('border');
+                const badgeSel = cardSel.querySelector('.badge');
+                if (badgeSel) {
+                    badgeSel.className = 'badge bg-primary';
+                    badgeSel.textContent = '✓ Seleccionado';
+                }
+            }
+        }
+
+        // ==========================================
+        // EJECUCIÓN FINAL Y MIS CITAS
+        // ==========================================
+
+        async function ejecutarReservaFinal() {
+            const establecimiento_id = document.getElementById('selectHospital').value;
+            const especialidad_id = document.getElementById('especialidadSeleccionadaId').value;
+            const horario_id = document.getElementById('inputHorarioId').value;
+            const dniPaciente = localStorage.getItem('pacienteDni');
+
+            if (!dniPaciente) {
+                alert('No se encontró la sesión del paciente. Inicie sesión nuevamente.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                // 1. Obtenemos el ID real del usuario usando su DNI
+                const resUser = await fetch(`${API_URL}/api/usuarios/dni/${dniPaciente}`);
+                const dataUser = await resUser.json();
+
+                if (!dataUser.success) {
+                    alert('Error: No se pudo identificar al usuario en la base de datos.');
+                    return;
+                }
+
+                const usuario_id = dataUser.id;
+                const medico_id = window.medicoIdSeleccionado || 1;
+
+                // 2. Enviamos la reserva con el ID correcto y exclusivo del paciente en sesión
+                const res = await fetch(`${API_URL}/api/citas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        usuario_id: parseInt(usuario_id),
+                        establecimiento_id: parseInt(establecimiento_id),
+                        especialidad_id: parseInt(especialidad_id),
+                        horario_id: parseInt(horario_id),
+                        medico_id: parseInt(medico_id)
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    const contenedorPaso3 = document.getElementById('vistaPaso3');
+                    const hospitalObj = listaHospitalesGlobal.find(h => h.id == establecimiento_id);
+                    const espObj = listaEspecialidadesActuales.find(e => e.id == especialidad_id);
+                    const fecha = document.getElementById('inputFecha').value;
+                    const hora = document.getElementById('inputHora').value;
+                    const medico = document.getElementById('inputMedico').value;
+
+                    contenedorPaso3.innerHTML = `
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <span class="text-uppercase text-muted fw-bold d-block" style="font-size: 0.7rem; letter-spacing: 1px;">RESERVA COMPLETADA</span>
+                    <h2 class="h4 fw-bold text-dark mb-1">Su cita fue confirmada</h2>
+                    <p class="text-muted small">Hemos reservado su atención médica con éxito. Guarde el código para cualquier consulta en admisión.</p>
+                </div>
+
+                <div class="text-center mb-4">
+                    <div class="d-inline-block border border-warning rounded-3 p-3 bg-light shadow-sm">
+                        <span class="text-muted small d-block" style="font-size: 0.7rem;">Código de atención</span>
+                        <span class="fw-bold text-dark fs-3" style="letter-spacing: 2px;">${data.codigo_atencion}</span>
+                    </div>
+                </div>
+
+                <div class="card border rounded-3 p-4 mb-4 shadow-sm bg-white">
+                    <div class="row g-3 mb-3 border-bottom pb-3">
+                        <div class="col-6">
+                            <span class="text-muted small d-block" style="font-size: 0.75rem;">Especialidad</span>
+                            <span class="fw-bold text-dark">${espObj ? espObj.nombre : 'Medicina General'}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block" style="font-size: 0.75rem;">Fecha y hora</span>
+                            <span class="fw-bold text-dark">${fecha}, ${hora}</span>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3 border-bottom pb-3">
+                        <div class="col-6">
+                            <span class="text-muted small d-block" style="font-size: 0.75rem;">Médico</span>
+                            <span class="fw-bold text-dark">${medico}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block" style="font-size: 0.75rem;">Establecimiento</span>
+                            <span class="fw-bold text-dark">${hospitalObj ? hospitalObj.nombre : ''}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-muted small d-block" style="font-size: 0.75rem;">Paciente</span>
+                        <span class="fw-bold text-dark">${pacienteNombre} (DNI: ${pacienteDni})</span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" onclick="window.print()" class="btn btn-outline-dark fw-semibold px-4 py-2">
+                        <i class="fa-solid fa-download me-2"></i> Descargar comprobante
+                    </button>
+                    <a href="index.html" class="btn btn-success fw-bold px-4 py-2 shadow-sm" style="background-color: #047857; border: none;">
+                        <i class="fa-solid fa-house me-2"></i> Volver al inicio
+                    </a>
+                </div>
+            `;
+                } else {
+                    alert('Error al reservar: ' + (data.error || 'No se pudo completar la solicitud'));
+                }
+            } catch (err) {
+                console.error("Error de red:", err);
+                alert('Error de conexión con el servidor. Verifique que Node.js esté corriendo.');
+            }
+        }
+        async function verMisCitas() {
+            const dniPaciente = localStorage.getItem('pacienteDni');
+
+            if (!dniPaciente) {
+                alert("No se encontró la sesión del paciente. Por favor, vuelva a iniciar sesión.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/pacientes/${dniPaciente}/citas`);
+                const citas = await res.json();
+
+                const container = document.getElementById('listaMisCitasContainer');
+                if (!citas || citas.length === 0) {
+                    container.innerHTML = `<p class="text-muted text-center py-4">No tienes citas médicas reservadas actualmente.</p>`;
+                } else {
+                    let html = `<div class="list-group">`;
+                    citas.forEach(c => {
+                        html += `
+                <div class="list-group-item d-flex justify-content-between align-items-center p-3 mb-2 border rounded-3 shadow-sm bg-light flex-column flex-md-row gap-3">
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold text-primary mb-1">${c.especialidad_name}</h6>
+                        <p class="mb-1 small text-dark"><strong>Hospital:</strong> ${c.establecimiento_name}</p>
+                        <p class="mb-1 small text-muted"><strong>Médico:</strong> ${c.medico_nombre}</p>
+                        <p class="mb-0 small text-success"><strong>Fecha y Hora:</strong> ${c.fecha} &nbsp;|&nbsp; <strong>Horario:</strong> ${c.hora_inicio} - ${c.hora_fin}</p>
+                    </div>
+                    <div>
+                        <button onclick="abrirModalCancelacion(${c.cita_id})" class="btn btn-danger btn-sm px-3 shadow-sm text-nowrap">
+                            <i class="fa-solid fa-ban me-1"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+                `;
+                    });
+                    html += `</div>`;
+                    container.innerHTML = html;
+                }
+                document.getElementById('modalMisCitas').style.display = 'block';
+            } catch (err) {
+                console.error("Error al cargar citas:", err);
+                alert('Error al cargar las citas.');
+            }
+        }
+        function cerrarModalCitas() {
+            document.getElementById('modalMisCitas').style.display = 'none';
+        }
+
+        function cancelarCitaDesdeModal(citaId) {
+            mostrarConfirmacionPersonalizada(
+                "¿Está seguro de que desea cancelar esta cita médica? El horario quedará libre nuevamente.",
+                async () => {
+                    // Lógica que se ejecuta al confirmar
+                    try {
+                        const res = await fetch(`${API_URL}/api/citas/${citaId}/cancelar`, {
+                            method: 'PUT'
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            // ✅ Quitamos el alert nativo feo y simplemente actualizamos la lista
+                            verMisCitas(); // Refresca la lista automáticamente y la cita desaparece
+                        } else {
+                            alert("No se pudo cancelar la cita.");
+                        }
+                    } catch (err) {
+                        console.error("Error al cancelar:", err);
+                        alert("Error de conexión con el servidor.");
+                    }
+                }
+            );
+        }
+        // ==========================================
+        // ACCESIBILIDAD (IHC)
+        // ==========================================
+
+        function alternarTextoGrande() {
+            document.body.classList.toggle('texto-ampliado');
+            const esGrande = document.body.classList.contains('texto-ampliado');
+            localStorage.setItem('accesibilidadTextoGrande', esGrande ? 'true' : 'false');
+        }
+
+        function alternarAltoContraste() {
+            document.body.classList.toggle('alto-contraste');
+            const esContraste = document.body.classList.contains('alto-contraste');
+            localStorage.setItem('accesibilidadAltoContraste', esContraste ? 'true' : 'false');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('accesibilidadTextoGrande') === 'true') {
+                document.body.classList.add('texto-ampliado');
+            }
+            if (localStorage.getItem('accesibilidadAltoContraste') === 'true') {
+                document.body.classList.add('alto-contraste');
+            }
+        });
+
+        let leyendo = false;
+        function escucharPagina() {
+            if (!('speechSynthesis' in window)) {
+                alert('Lo siento, tu navegador no soporta la lectura de voz.');
+                return;
+            }
+
+            const synth = window.speechSynthesis;
+            const btn = document.getElementById('btnAudio');
+
+            if (leyendo) {
+                synth.cancel();
+                leyendo = false;
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+                return;
+            }
+
+            const textosALeer = [];
+            document.querySelectorAll('h1, h2, h3, h4, p, label, .card-reserva, .list-group-item').forEach(el => {
+                if (el.offsetParent !== null && el.innerText.trim() !== '') {
+                    textosALeer.push(el.innerText.trim());
+                }
+            });
+
+            const textoCompleto = textosALeer.join('. ');
+            const utterThis = new SpeechSynthesisUtterance(textoCompleto);
+            utterThis.lang = 'es-PE';
+            utterThis.rate = 0.95;
+
+            utterThis.onstart = () => {
+                leyendo = true;
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-stop me-1"></i> Detener audio';
+            };
+
+            utterThis.onend = () => {
+                leyendo = false;
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+            };
+
+            synth.speak(utterThis);
+        }
+        function mostrarConfirmacionPersonalizada(mensaje, callbackAccion) {
+            document.getElementById('mensajeConfirmacionTexto').innerText = mensaje;
+
+            const modalEl = document.getElementById('modalConfirmacion');
+            modalEl.style.display = 'block';
+            modalEl.classList.add('show');
+            modalEl.style.backgroundColor = 'rgba(0,0,0,0.5)';
+
+            const btnConfirmar = document.getElementById('btnConfirmarAccion');
+
+            // Limpiamos eventos anteriores clonando el botón
+            const nuevoBtn = btnConfirmar.cloneNode(true);
+            btnConfirmar.parentNode.replaceChild(nuevoBtn, btnConfirmar);
+
+            // Asignamos la acción al nuevo botón de forma directa
+            document.getElementById('btnConfirmarAccion').onclick = async () => {
+                modalEl.style.display = 'none';
+                modalEl.classList.remove('show');
+
+                // Ejecutamos la función de cancelación (el fetch)
+                if (typeof callbackAccion === 'function') {
+                    await callbackAccion();
+                }
+            };
+        }
+        let citaIdParaCancelar = null; // Variable global para recordar qué cita se va a cancelar
+
+        // 1. Mostrar el modal y guardar el ID de la cita que se quiere cancelar
+        function abrirModalCancelacion(citaId) {
+            citaIdParaCancelar = citaId;
+            console.log("ID de cita seleccionado para cancelar:", citaIdParaCancelar); // Para verificar en F12
+
+            const modalEl = document.getElementById('modalConfirmacion');
+            modalEl.style.display = 'block';
+            modalEl.classList.add('show');
+            modalEl.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            modalEl.style.zIndex = '1060';
+        }
+
+        // 2. Cerrar el modal sin hacer nada (Botón "Conservar cita")
+        function cerrarModalConfirmacion() {
+            const modalEl = document.getElementById('modalConfirmacion');
+            modalEl.style.display = 'none';
+            modalEl.classList.remove('show');
+            citaIdParaCancelar = null;
+        }
+
+        // 3. Ejecutar la cancelación real al hacer clic en "Sí, cancelar"
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnConfirmar = document.getElementById('btnConfirmarAccion');
+
+            if (btnConfirmar) {
+                btnConfirmar.onclick = async () => {
+                    const idACancelar = citaIdParaCancelar;
+                    cerrarModalConfirmacion(); // Cerramos el modal primero
+
+                    if (!idACancelar) {
+                        console.warn("No hay ID de cita para cancelar.");
+                        return;
+                    }
+
+                    try {
+                        // Petición real al servidor para cambiar el estado de la cita a cancelada en MySQL
+                        const res = await fetch(`${API_URL}/api/citas/${idACancelar}/cancelar`, {
+                            method: 'PUT'
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            verMisCitas(); // Refresca la lista y la cita desaparecerá al instante
+                        } else {
+                            console.warn("El servidor no pudo cancelar la cita.");
+                        }
+                    } catch (err) {
+                        console.error("Error de red al intentar cancelar la cita:", err);
+                    }
+                };
+            }
+        });
+        function cerrarSesion() {
+            localStorage.removeItem('pacienteDni');
+            localStorage.removeItem('pacienteNombre');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>

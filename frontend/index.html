@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <!-- Enlace a Bootstrap Icons en el <head> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Inclusivo de Citas Médicas - MINSA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Enlace al CSS independiente -->
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+
+    <!-- Header MINSA -->
+    <header class="minsa-bar d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <div class="logo-m">M</div>
+            <div>
+                <h1 class="h6 mb-0 fw-bold text-white">MINSA</h1>
+                <p class="mb-0 text-white-50 small" style="font-size: 0.75rem;">Sistema Inclusivo de Citas Médicas</p>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="toggleAltoContraste()"><i
+                    class="fa-solid fa-circle-half-stroke me-1"></i> Alto contraste</button>
+            <button class="btn btn-sm bg-warning text-dark fw-bold rounded-pill px-3" onclick="toggleTextoGrande()"><i
+                    class="fa-solid fa-a me-1"></i> Texto grande</button>
+            <button class="btn btn-sm btn-light rounded-pill px-3 fw-semibold" onclick="escucharPagina()"><i
+                    class="fa-solid fa-volume-high me-1"></i> Escuchar página</button>
+            <button class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold" data-bs-toggle="modal"
+                data-bs-target="#modalAdminLogin">
+                <i class="fa-solid fa-user-shield me-1"></i> Panel Admin
+            </button>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="container my-auto py-5" style="max-width: 1100px;">
+        <div class="row align-items-center g-5">
+
+            <!-- Columna Izquierda: Información -->
+            <div class="col-lg-6">
+                <span class="badge-portal text-uppercase mb-3 d-inline-block">PORTAL DEL PACIENTE</span>
+                <h2 class="display-6 fw-bold text-dark mb-3" style="line-height: 1.2;">Reserve su Cita Médica Accesible
+                </h2>
+                <p class="text-secondary mb-4" style="font-size: 0.95rem;">
+                    Acceda a los servicios de salud pública del MINSA en Lima Metropolitana con una interfaz adaptada a
+                    sus necesidades.
+                </p>
+
+                <div class="d-flex flex-column gap-3 text-secondary" style="font-size: 0.9rem;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-success fs-5"></i>
+                        <span>Selección sencilla de hospitales y especialidades de atención.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-success fs-5"></i>
+                        <span>Consulta inmediata de turnos y cupos libres en tiempo real.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-success fs-5"></i>
+                        <span>Confirmación de cita con recordatorio por código de atención.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Tarjeta con Pestañas -->
+            <div class="col-lg-6">
+                <div class="card card-login p-4 p-md-5">
+
+                    <!-- Pestañas de Navegación -->
+                    <div class="d-flex gap-4 mb-4 border-bottom pb-2">
+                        <button id="tabLogin" class="tab-custom active" onclick="cambiarTab('login')">
+                            <i class="fa-solid fa-right-to-bracket me-1"></i> Iniciar Sesión
+                        </button>
+                        <button id="tabRegistro" class="tab-custom text-muted" onclick="cambiarTab('registro')">
+                            <i class="fa-solid fa-user-plus me-1"></i> Registrarse
+                        </button>
+                    </div>
+
+                    <!-- FORMULARIO DE INICIO DE SESIÓN -->
+                    <div id="formLogin">
+                        <div class="mb-3">
+                            <h3 class="h5 fw-bold text-dark mb-1">Ingreso de Paciente</h3>
+                            <p class="text-muted small">Ingrese su DNI y clave para gestionar sus citas reservadas.</p>
+                        </div>
+
+                        <form onsubmit="iniciarSesionBD(event)">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-secondary">Número de DNI</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i
+                                            class="fa-solid fa-id-card"></i></span>
+                                    <input type="text" id="loginDni" class="form-control" placeholder="Ej. 74859612"
+                                        maxlength="8" required>
+                                </div>
+                                <div class="form-text text-muted" style="font-size: 0.72rem;">Ingrese sus 8 dígitos
+                                    numéricos.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-secondary">Contraseña o Clave PIN</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i
+                                            class="fa-solid fa-lock"></i></span>
+                                    <input type="password" id="loginPassword" class="form-control"
+                                        placeholder="••••••••" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 shadow-sm fw-bold py-2"
+                                style="background-color: #0056b3; border: none;">
+                                <i class="fa-solid fa-right-to-bracket me-2"></i> Iniciar Sesión de Paciente
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- FORMULARIO DE REGISTRO -->
+                    <div id="formRegistro" class="d-none">
+                        <div class="mb-3">
+                            <h3 class="h5 fw-bold text-dark mb-1">Registro de Nuevo Paciente</h3>
+                            <p class="text-muted small">Cree su cuenta vinculada a su DNI y correo.</p>
+                        </div>
+
+                        <form onsubmit="registrarUsuarioBD(event)">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-secondary">Nombres y Apellidos</label>
+                                <input type="text" id="regNombres" class="form-control"
+                                    placeholder="Ej. Paola Lucia Olivos" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-secondary">Número de DNI</label>
+                                <input type="text" id="regDni" class="form-control" placeholder="Ej. 75525096"
+                                    maxlength="8" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-secondary">Correo Electrónico</label>
+                                <input type="email" id="regCorreo" class="form-control"
+                                    placeholder="Ej. correo@minsa.gob.pe" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-secondary">Crear Contraseña</label>
+                                <input type="password" id="regPassword" class="form-control" placeholder="••••••••"
+                                    required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm"
+                                style="background-color: #059669; border: none;">
+                                <i class="fa-solid fa-user-check me-2"></i> Registrarse
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 1. PEGA EL MODAL AQUÍ, AFUERA DE TODO -->
+    <div class="modal fade" id="modalAdminLogin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header text-white" style="background-color: #002B40;">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-shield me-2"></i>Acceso de Administrador
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">Ingrese sus credenciales autorizadas para gestionar el sistema
+                        MINSA.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-secondary">Usuario Administrador</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" id="txtAdminUser" class="form-control" placeholder="Ej: admin">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-secondary">Contraseña</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" id="txtAdminPass" class="form-control" placeholder="****">
+                        </div>
+                    </div>
+                    <button type="button" onclick="validarLoginAdmin()"
+                        class="btn btn-primary w-100 fw-bold py-2 shadow-sm"
+                        style="background-color: #0056b3; border: none;">
+                        Ingresar al Panel <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de Éxito de Registro -->
+    <div class="modal fade" id="modalRegistroExitoso" tabindex="-1" aria-labelledby="modalRegistroExitosoLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4 p-2">
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3 text-success">
+                        <i class="bi bi-check-circle-fill display-3"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">¡Registro Exitoso!</h4>
+                    <p class="text-muted mb-4">Su cuenta ha sido creada correctamente. Ya puede iniciar sesión en el
+                        sistema.</p>
+                    <button type="button" class="btn btn-success px-4 rounded-pill fw-semibold" data-bs-dismiss="modal"
+                        id="btnIrLogin">Iniciar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de Mensaje / Alerta General (Para Errores de Login u otros) -->
+    <div class="modal fade" id="modalAlertaSistema" tabindex="-1" aria-labelledby="modalAlertaSistemaLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4 p-2">
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3 text-danger" id="iconoAlertaModal">
+                        <i class="bi bi-exclamation-triangle-fill display-3"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2" id="tituloAlertaModal">¡Atención!</h4>
+                    <p class="text-muted mb-4" id="mensajeAlertaModal">Ocurrió un error en el proceso.</p>
+                    <button type="button" class="btn btn-danger px-4 rounded-pill fw-semibold"
+                        data-bs-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Sección: Todo el proceso de atención en un solo lugar (Con iconos en cajitas) -->
+    <div class="container my-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-dark">Todo el proceso de atención en un solo lugar</h2>
+        </div>
+
+        <div class="row g-4">
+            <!-- Tarjeta 1: Elija su hospital -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-4 fs-4"
+                            style="width: 55px; height: 55px;">
+                            <i class="bi bi-hospital"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">Elija su hospital</h4>
+                    <p class="text-muted mb-0">
+                        Consulte la red asistencial activa y las especialidades habilitadas por establecimiento.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tarjeta 2: Reserve su horario -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-4 fs-4"
+                            style="width: 55px; height: 55px;">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">Reserve su horario</h4>
+                    <p class="text-muted mb-0">
+                        Seleccione fecha y hora con bloqueo inmediato que evita la doble reserva del cupo.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tarjeta 3: Reprograme o cancele -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-4 fs-4"
+                            style="width: 55px; height: 55px;">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">Reprograme o cancele</h4>
+                    <p class="text-muted mb-0">
+                        Gestione sus citas activas y libere el cupo para otros pacientes cuando lo necesite.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. LUEGO DEJAN TUS SCRIPTS INTACTOS AQUÍ -->
+    <script>
+        // Tu script del login administrador
+        function validarLoginAdmin() {
+            const user = document.getElementById('txtAdminUser').value;
+            const pass = document.getElementById('txtAdminPass').value;
+
+            // Validando con el DNI y Password de tu tabla MySQL
+            if (user === '00000000' && pass === 'admin123') {
+                localStorage.setItem('adminLogueado', 'true');
+                window.location.href = 'admin.html';
+            } else {
+                alert('Credenciales incorrectas. Acceso denegado.');
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <!-- Footer -->
+    <footer class="text-center py-3 text-muted small border-top bg-white">
+        <p class="mb-0">© 2026 Ministerio de Salud del Perú - Todos los derechos reservados.</p>
+    </footer>
+
+
+
+
+
+
+    <!-- Scripts de lógica y accesibilidad -->
+    <script>
+
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : 'https://tu-backend-real.onrender.com';
+        function cambiarTab(tipo) {
+            const tabLogin = document.getElementById('tabLogin');
+            const tabRegistro = document.getElementById('tabRegistro');
+            const formLogin = document.getElementById('formLogin');
+            const formRegistro = document.getElementById('formRegistro');
+
+            if (tipo === 'login') {
+                tabLogin.className = 'tab-custom active';
+                tabRegistro.className = 'tab-custom text-muted';
+                formLogin.classList.remove('d-none');
+                formRegistro.classList.add('d-none');
+            } else {
+                tabRegistro.className = 'tab-custom active';
+                tabLogin.className = 'tab-custom text-muted';
+                formRegistro.classList.remove('d-none');
+                formLogin.classList.add('d-none');
+            }
+        }
+
+        async function iniciarSesionBD(e) {
+            e.preventDefault();
+            const dni = document.getElementById('loginDni').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dni, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    localStorage.setItem('pacienteNombre', `${data.usuario.nombres} ${data.usuario.apellidos}`);
+                    localStorage.setItem('pacienteDni', data.usuario.dni);
+                    window.location.href = 'reserva.html';
+                } else {
+                    mostrarAlertaModal("Acceso Denegado", data.mensaje || "DNI o contraseña incorrectos.", true);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error al conectar con el servidor backend.');
+            }
+        }
+
+        async function registrarUsuarioBD(e) {
+            e.preventDefault();
+            const nombres = document.getElementById('regNombres').value.trim();
+            const dni = document.getElementById('regDni').value.trim();
+            const correo = document.getElementById('regCorreo').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/registro`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombres, dni, correo, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    // 1. Mostrar el modal elegante de Bootstrap en lugar del alert
+                    const myModal = new bootstrap.Modal(document.getElementById('modalRegistroExitoso'));
+                    myModal.show();
+
+                    // 2. Al hacer clic en el botón del modal, cambiar al tab de login
+                    document.getElementById('btnIrLogin').onclick = () => {
+                        cambiarTab('login');
+                    };
+                } else {
+                    alert(data.mensaje || 'Error al registrar usuario');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error de conexión con el servidor.');
+            }
+        }
+
+        function toggleAltoContraste() { document.body.classList.toggle('high-contrast'); }
+        function toggleTextoGrande() { document.body.classList.toggle('large-text'); }
+        function escucharPagina() {
+            const utterance = new SpeechSynthesisUtterance("Portal del Paciente MINSA. Ingrese su DNI y clave para gestionar sus citas.");
+            utterance.lang = 'es-PE';
+            window.speechSynthesis.speak(utterance);
+        }
+
+
+    </script>
+
+    <script>
+        let leyendo = false;
+
+        function escucharPagina() {
+            if (!('speechSynthesis' in window)) {
+                alert('Lo siento, tu navegador no soporta la lectura de voz.');
+                return;
+            }
+
+            const synth = window.speechSynthesis;
+            const btn = document.getElementById('btnAudio');
+
+            if (leyendo) {
+                synth.cancel();
+                leyendo = false;
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+                return;
+            }
+
+            const textosALeer = [];
+            document.querySelectorAll('h1, h2, h3, h4, p, label, .card-reserva').forEach(el => {
+                if (el.offsetParent !== null && el.innerText.trim() !== '') {
+                    textosALeer.push(el.innerText.trim());
+                }
+            });
+
+            const textoCompleto = textosALeer.join('. ');
+            const utterThis = new SpeechSynthesisUtterance(textoCompleto);
+            utterThis.lang = 'es-PE';
+            utterThis.rate = 0.95;
+
+            utterThis.onstart = () => {
+                leyendo = true;
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-stop me-1"></i> Detener audio';
+            };
+
+            utterThis.onend = () => {
+                leyendo = false;
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+            };
+
+            synth.speak(utterThis);
+        }
+        function mostrarAlertaModal(titulo, mensaje, esError = true) {
+            document.getElementById('tituloAlertaModal').innerText = titulo;
+            document.getElementById('mensajeAlertaModal').innerText = mensaje;
+
+            const icono = document.getElementById('iconoAlertaModal');
+            if (esError) {
+                icono.className = "mb-3 text-danger";
+                icono.innerHTML = '<i class="bi bi-exclamation-triangle-fill display-3"></i>';
+            } else {
+                icono.className = "mb-3 text-success";
+                icono.innerHTML = '<i class="bi bi-check-circle-fill display-3"></i>';
+            }
+
+            const modalAlerta = new bootstrap.Modal(document.getElementById('modalAlertaSistema'));
+            modalAlerta.show();
+        }
+        let textoGrandeActivo = false;
+
+        function toggleTextoGrande() {
+            textoGrandeActivo = !textoGrandeActivo;
+
+            // Seleccionamos los títulos principales y párrafos clave
+            const titulos = document.querySelectorAll('h1, h2, h3, .lead, p');
+
+            titulos.forEach(el => {
+                if (textoGrandeActivo) {
+                    // Guardamos el tamaño original si lo deseas, o aplicamos un aumento notable
+                    if (!el.dataset.sizeOriginal) {
+                        el.dataset.sizeOriginal = window.getComputedStyle(el).fontSize;
+                    }
+                    // Aumentamos considerablemente los píxeles o usamos escala
+                    let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+                    el.style.fontSize = (currentSize * 1.35) + 'px'; // Aumenta un 35% real y заметible
+                } else {
+                    // Volver al tamaño original
+                    if (el.dataset.sizeOriginal) {
+                        el.style.fontSize = el.dataset.sizeOriginal;
+                    }
+                }
+            });
+        }
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Tab') {
+                // Permitir la tabulación normal del navegador sin bloquearla
+                event.stopPropagation();
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>

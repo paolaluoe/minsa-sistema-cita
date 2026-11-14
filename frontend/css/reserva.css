@@ -1,0 +1,150 @@
+:root {
+    --minsa-header-bg: #004060;
+    --bg-main: #F4F7F9;
+}
+
+body {
+    background-color: var(--bg-main);
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #2B3A42;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.minsa-bar {
+    background-color: var(--minsa-header-bg);
+    color: white;
+    padding: 12px 40px;
+}
+
+.logo-m {
+    background-color: #002B40;
+    border: 2px solid #FFF;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.card-reserva {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    background: white;
+}
+
+.hospital-card {
+    border: 2px solid #E2E8F0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.hospital-card:hover, .hospital-card.selected {
+    border-color: #004060;
+    background-color: #F8FAFC;
+}
+
+.especialidad-card {
+    border: 2px solid #E2E8F0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.especialidad-card:hover, .especialidad-card.selected {
+    border-color: #004060;
+    background-color: #F0F4F8;
+}
+
+.btn-minsa {
+    background-color: #004060;
+    color: white;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    transition: background 0.2s;
+}
+
+.btn-minsa:hover {
+    background-color: #002B40;
+    color: white;
+}
+/* ==========================================
+   REGLAS DE ACCESIBILIDAD (IHC - POUR)
+   ================================---------- */
+
+/* 1. Modo de Texto Ampliado (Discapacidad visual / Adulto mayor) */
+body.texto-ampliado {
+    font-size: 1.3rem !important;
+}
+
+body.texto-ampliado h1, 
+body.texto-ampliado h2, 
+body.texto-ampliado h3, 
+body.texto-ampliado h4 {
+    font-size: calc(1rem + 1.2vw) !important;
+}
+
+body.texto-ampliado .form-control, 
+body.texto-ampliado .form-select, 
+body.texto-ampliado .btn,
+body.texto-ampliado .card-reserva {
+    font-size: 1.2rem !important;
+}
+
+body.texto-ampliado small, 
+body.texto-ampliado .small {
+    font-size: 1rem !important;
+}
+
+/* 2. Modo de Alto Contraste (Accesibilidad Visual) */
+body.alto-contraste {
+    background-color: #000000 !important;
+    color: #FFFF00 !important;
+}
+
+body.alto-contraste .card-reserva,
+body.alto-contraste .card,
+body.alto-contraste .modal-content {
+    background-color: #000000 !important;
+    color: #FFFF00 !important;
+    border: 3px solid #FFFF00 !important;
+}
+
+body.alto-contraste .form-control,
+body.alto-contraste .form-select {
+    background-color: #000000 !important;
+    color: #FFFF00 !important;
+    border: 2px solid #FFFF00 !important;
+}
+
+body.alto-contraste a, 
+body.alto-contraste span, 
+body.alto-contraste p, 
+body.alto-contraste h1, 
+body.alto-contraste h2, 
+body.alto-contraste h3, 
+body.alto-contraste h4, 
+body.alto-contraste label {
+    color: #FFFF00 !important;
+}
+
+body.alto-contraste .btn-primary,
+body.alto-contraste .minsa-bar {
+    background-color: #000000 !important;
+    border: 3px solid #FFFF00 !important;
+    color: #FFFF00 !important;
+}

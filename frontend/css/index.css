@@ -1,0 +1,109 @@
+:root {
+    --minsa-header-bg: #004060;
+    --bg-main: #F4F7F9;
+}
+
+body {
+    background-color: var(--bg-main);
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #2B3A42;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.minsa-bar {
+    background-color: var(--minsa-header-bg);
+    color: white;
+    padding: 12px 40px;
+}
+
+.logo-m {
+    background-color: #002B40;
+    border: 2px solid #FFF;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.badge-portal {
+    background-color: #004060;
+    color: white;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+}
+
+.card-login {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    background: white;
+}
+
+.btn-minsa {
+    background-color: #0056b3;
+    color: white;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    transition: background 0.2s;
+}
+
+.btn-minsa:hover {
+    background-color: #004085;
+    color: white;
+}
+
+.tab-custom {
+    font-weight: 600;
+    color: #64748B;
+    border: none;
+    background: transparent;
+    padding-bottom: 8px;
+    cursor: pointer;
+}
+.tab-custom.active {
+    color: #004060;
+    border-bottom: 2px solid #004060;
+}
+
+body.high-contrast { background-color: #000 !important; color: #FFF !important; }
+body.high-contrast .minsa-bar { background-color: #111 !important; }
+body.high-contrast .card-login { background-color: #1A1A1A !important; color: #FFF !important; border: 1px solid #444; }
+
+/* Modo de Texto Grande Mejorado y Muy Visible */
+body.large-text {
+    font-size: 1.35rem !important;
+}
+
+body.large-text h1 {
+    font-size: 3.2rem !important;
+}
+
+body.large-text h2 {
+    font-size: 2.6rem !important;
+}
+
+body.large-text h3, body.large-text h4 {
+    font-size: 2rem !important;
+}
+
+body.large-text p, 
+body.large-text span, 
+body.large-text label, 
+body.large-text a, 
+body.large-text button,
+body.large-text input {
+    font-size: 1.25rem !important;
+}
