@@ -1,3 +1,6 @@
+/* =========================================================
+   VARIABLES Y BASE DE LA PÁGINA
+   ========================================================= */
 :root {
     --minsa-header-bg: #004060;
     --bg-main: #F4F7F9;
@@ -13,31 +16,37 @@ body {
     justify-content: space-between;
 }
 
+/* =========================================================
+   ENCABEZADO SUPERIOR (MINSA)
+   ========================================================= */
 .minsa-bar {
-    background-color: var(--minsa-header-bg);
-    color: white;
+    background-color: #002B40;
+    color: #ffffff;
     padding: 12px 40px;
 }
 
 .logo-m {
-    background-color: #002B40;
-    border: 2px solid #FFF;
-    color: white;
-    font-weight: bold;
-    font-size: 1.2rem;
-    width: 38px;
-    height: 38px;
+    background-color: #ffffff;
+    border: none;
+    color: #0284c7;
+    font-weight: 800;
+    font-size: 1.25rem;
+    width: 42px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: 10px;
 }
 
+/* =========================================================
+   TARJETAS, BOTONES Y SELECCIÓN DE RESERVA
+   ========================================================= */
 .card-reserva {
     border-radius: 16px;
     border: none;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    background: white;
+    background: #ffffff;
 }
 
 .hospital-card {
@@ -45,10 +54,11 @@ body {
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
-    background: white;
+    background: #ffffff;
 }
 
-.hospital-card:hover, .hospital-card.selected {
+.hospital-card:hover,
+.hospital-card.selected {
     border-color: #004060;
     background-color: #F8FAFC;
 }
@@ -58,19 +68,20 @@ body {
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
-    background: white;
+    background: #ffffff;
     text-align: center;
     padding: 20px;
 }
 
-.especialidad-card:hover, .especialidad-card.selected {
+.especialidad-card:hover,
+.especialidad-card.selected {
     border-color: #004060;
     background-color: #F0F4F8;
 }
 
 .btn-minsa {
     background-color: #004060;
-    color: white;
+    color: #ffffff;
     font-weight: 700;
     padding: 12px;
     border-radius: 8px;
@@ -80,71 +91,521 @@ body {
 
 .btn-minsa:hover {
     background-color: #002B40;
-    color: white;
-}
-/* ==========================================
-   REGLAS DE ACCESIBILIDAD (IHC - POUR)
-   ================================---------- */
-
-/* 1. Modo de Texto Ampliado (Discapacidad visual / Adulto mayor) */
-body.texto-ampliado {
-    font-size: 1.3rem !important;
+    color: #ffffff;
 }
 
-body.texto-ampliado h1, 
-body.texto-ampliado h2, 
-body.texto-ampliado h3, 
-body.texto-ampliado h4 {
-    font-size: calc(1rem + 1.2vw) !important;
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
 }
 
-body.texto-ampliado .form-control, 
-body.texto-ampliado .form-select, 
-body.texto-ampliado .btn,
-body.texto-ampliado .card-reserva {
-    font-size: 1.2rem !important;
+.calendar-day {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 4px;
+    text-align: center;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.2s;
+    min-height: 55px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-body.texto-ampliado small, 
-body.texto-ampliado .small {
-    font-size: 1rem !important;
+.calendar-day:hover {
+    border-color: #004060;
+    background-color: #f8fafc;
 }
 
-/* 2. Modo de Alto Contraste (Accesibilidad Visual) */
-body.alto-contraste {
+.calendar-day.selected {
+    background-color: #002B40 !important;
+    color: white !important;
+    border-color: #002B40 !important;
+}
+
+.calendar-day.selected .text-muted,
+.calendar-day.selected small {
+    color: #e2e8f0 !important;
+}
+
+.dot-available {
+    height: 5px;
+    width: 5px;
+    background-color: #059669;
+    border-radius: 50%;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.turno-pill {
+    border: 2px solid #cbd5e1;
+    background-color: #ffffff;
+    color: #1e293b;
+    border-radius: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.turno-pill:hover {
+    border-color: #0056b3;
+    background-color: #f8fafc;
+}
+
+.turno-pill.active {
+    border-color: #0056b3;
+    background-color: #eff6ff;
+    box-shadow: 0 4px 10px rgba(0, 86, 179, 0.12);
+}
+
+.turno-pill.active .turno-titulo {
+    color: #004085;
+}
+
+/* =========================================================
+   BOTÓN SUPERIOR: "Alto contraste" (MODO NORMAL)
+   ========================================================= */
+.minsa-bar #btnAltoContraste,
+.minsa-bar #btnAltoContraste:not(:hover):not(:focus) {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #ffffff !important;
+}
+
+.minsa-bar #btnAltoContraste i {
+    color: #000000 !important;
+}
+
+.minsa-bar #btnAltoContraste:hover {
+    background-color: #f1f5f9 !important;
+    color: #000000 !important;
+    border-color: #f1f5f9 !important;
+}
+
+/* =========================================================
+   BOTÓN SUPERIOR: "Escuchar página" / "Detener audio"
+   ========================================================= */
+.minsa-bar #btnAudio:not(.leyendo),
+.minsa-bar #btnAudio:not(.leyendo):not(:hover):not(:focus) {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #ffffff !important;
+}
+
+.minsa-bar #btnAudio:not(.leyendo) i {
+    color: #000000 !important;
+}
+
+.minsa-bar #btnAudio:not(.leyendo):hover {
+    background-color: #f1f5f9 !important;
+    color: #000000 !important;
+    border-color: #f1f5f9 !important;
+}
+
+/* Botón superior en modo normal cuando está reproduciendo -> ROJO */
+#btnAudio.leyendo,
+.minsa-bar #btnAudio.leyendo {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+    border-color: #dc3545 !important;
+}
+
+#btnAudio.leyendo i,
+.minsa-bar #btnAudio.leyendo i {
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   MODO ALTO CONTRASTE (DISCAPACIDAD VISUAL)
+   ========================================================= */
+body.high-contrast {
     background-color: #000000 !important;
-    color: #FFFF00 !important;
+    color: #ffffff !important;
 }
 
-body.alto-contraste .card-reserva,
-body.alto-contraste .card,
-body.alto-contraste .modal-content {
+body.high-contrast .minsa-bar {
     background-color: #000000 !important;
-    color: #FFFF00 !important;
-    border: 3px solid #FFFF00 !important;
+    border-bottom: 2px solid #ffff00 !important;
 }
 
-body.alto-contraste .form-control,
-body.alto-contraste .form-select {
+body.high-contrast .logo-m {
+    background-color: #ffffff !important;
+    color: #0284c7 !important;
+    border: none !important;
+}
+
+body.high-contrast .card,
+body.high-contrast .card-reserva,
+body.high-contrast .modal-content,
+body.high-contrast .hospital-card,
+body.high-contrast .especialidad-card,
+body.high-contrast .calendar-day,
+body.high-contrast .list-group-item {
+    background-color: #121212 !important;
+    color: #ffffff !important;
+    border: 2px solid #ffff00 !important;
+    box-shadow: none !important;
+}
+
+body.high-contrast .form-control,
+body.high-contrast .form-select {
+    background-color: #212121 !important;
+    color: #ffffff !important;
+    border: 1px solid #ffff00 !important;
+}
+
+body.high-contrast h1,
+body.high-contrast h2,
+body.high-contrast h3,
+body.high-contrast h4,
+body.high-contrast h5,
+body.high-contrast h6,
+body.high-contrast p,
+body.high-contrast label,
+body.high-contrast span,
+body.high-contrast a,
+body.high-contrast .text-dark,
+body.high-contrast .text-secondary,
+body.high-contrast .text-muted {
+    color: #ffffff !important;
+}
+
+/* Botón superior "Alto contraste" en alto contraste */
+body.high-contrast #btnAltoContraste,
+body.high-contrast #btnAltoContraste.activo,
+body.high-contrast .minsa-bar #btnAltoContraste,
+body.high-contrast .minsa-bar #btnAltoContraste.activo,
+body.high-contrast #btnAltoContraste:hover,
+body.high-contrast #btnAltoContraste.activo:hover,
+body.high-contrast #btnAltoContraste:focus,
+body.high-contrast #btnAltoContraste.activo:focus,
+body.high-contrast #btnAltoContraste:focus-visible,
+body.high-contrast #btnAltoContraste.activo:focus-visible {
     background-color: #000000 !important;
-    color: #FFFF00 !important;
-    border: 2px solid #FFFF00 !important;
+    color: #ffff00 !important;
+    border: 2px solid #ffff00 !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
-body.alto-contraste a, 
-body.alto-contraste span, 
-body.alto-contraste p, 
-body.alto-contraste h1, 
-body.alto-contraste h2, 
-body.alto-contraste h3, 
-body.alto-contraste h4, 
-body.alto-contraste label {
-    color: #FFFF00 !important;
+body.high-contrast #btnAltoContraste i,
+body.high-contrast #btnAltoContraste.activo i,
+body.high-contrast .minsa-bar #btnAltoContraste i,
+body.high-contrast .minsa-bar #btnAltoContraste.activo i {
+    color: #ffff00 !important;
 }
 
-body.alto-contraste .btn-primary,
-body.alto-contraste .minsa-bar {
+/* Botón superior "A+ Texto grande" en alto contraste */
+body.high-contrast #btnTextoGrande,
+body.high-contrast .minsa-bar #btnTextoGrande,
+body.high-contrast #btnTextoGrande:hover,
+body.high-contrast #btnTextoGrande:focus,
+body.high-contrast #btnTextoGrande:focus-visible {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    border: 2px solid #ffff00 !important;
+    box-shadow: none !important;
+}
+
+body.high-contrast #btnTextoGrande i,
+body.high-contrast .minsa-bar #btnTextoGrande i {
+    color: #000000 !important;
+}
+
+/* =========================================================
+   BOTÓN SUPERIOR: "Escuchar página" EN MODO ALTO CONTRASTE (REPOSO)
+   ========================================================= */
+
+body.high-contrast #btnAudio:not(.leyendo),
+body.high-contrast .minsa-bar #btnAudio:not(.leyendo),
+body.high-contrast #btnAudio.btn-outline-light:not(.leyendo),
+body.high-contrast .minsa-bar #btnAudio.btn-outline-light:not(.leyendo),
+body.high-contrast #btnAudio:not(.leyendo):hover,
+body.high-contrast #btnAudio:not(.leyendo):focus,
+body.high-contrast #btnAudio:not(.leyendo):focus-visible,
+body.high-contrast #btnAudio:not(.leyendo):active,
+body.high-contrast .minsa-bar #btnAudio:not(.leyendo):hover,
+body.high-contrast .minsa-bar #btnAudio:not(.leyendo):focus,
+body.high-contrast .minsa-bar #btnAudio:not(.leyendo):focus-visible,
+body.high-contrast .minsa-bar #btnAudio:not(.leyendo):active {
     background-color: #000000 !important;
-    border: 3px solid #FFFF00 !important;
-    color: #FFFF00 !important;
+    color: #ffff00 !important;
+    border: 2px solid #ffff00 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+body.high-contrast #btnAudio:not(.leyendo) i,
+body.high-contrast .minsa-bar #btnAudio:not(.leyendo) i,
+body.high-contrast #btnAudio.btn-outline-light:not(.leyendo) i {
+    color: #ffff00 !important;
+}
+
+/* Botón superior "Detener audio" en alto contraste -> IGUAL A LA 4TA IMAGEN */
+body.high-contrast #btnAudio.leyendo,
+body.high-contrast .minsa-bar #btnAudio.leyendo,
+body.high-contrast #btnAudio.leyendo:hover,
+body.high-contrast #btnAudio.leyendo:focus,
+body.high-contrast #btnAudio.leyendo:focus-visible,
+body.high-contrast .minsa-bar #btnAudio.leyendo:hover,
+body.high-contrast .minsa-bar #btnAudio.leyendo:focus,
+body.high-contrast .minsa-bar #btnAudio.leyendo:focus-visible {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    border: 2px solid #ffff00 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+body.high-contrast #btnAudio.leyendo i,
+body.high-contrast .minsa-bar #btnAudio.leyendo i {
+    color: #000000 !important;
+}
+
+/* =========================================================
+   MODO TEXTO GRANDE (ESCALONADO POR CLIC)
+   ========================================================= */
+body.large-text main.container {
+    max-width: 960px !important;
+}
+
+body.large-text .card-reserva {
+    padding: 1.5rem !important;
+}
+/* =========================================================
+   PASO 2 EN MODO ALTO CONTRASTE (ESTILO REFERENCIA)
+   ========================================================= */
+
+/* Contenedor principal del Paso 2 */
+body.high-contrast #vistaPaso2 .card-reserva {
+    background-color: #000000 !important;
+    border: 2px solid #ffff00 !important;
+    box-shadow: none !important;
+}
+
+/* Textos resaltados en amarillo en el Paso 2 */
+body.high-contrast #vistaPaso2 .text-primary,
+body.high-contrast #vistaPaso2 .fa-briefcase-medical,
+body.high-contrast #vistaPaso2 #lblMedicoCalendario {
+    color: #ffff00 !important;
+}
+
+/* Tarjetas de médicos en alto contraste */
+body.high-contrast #vistaPaso2 .medico-card {
+    background-color: #09090b !important;
+    border: 1.5px solid #ffff00 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+body.high-contrast #vistaPaso2 .medico-card .text-dark,
+body.high-contrast #vistaPaso2 .medico-card .fw-bold,
+body.high-contrast #vistaPaso2 .medico-card span {
+    color: #ffffff !important;
+}
+
+/* Tarjeta de médico seleccionada (fondo amarillo + letras negras) */
+body.high-contrast #vistaPaso2 .medico-card.activa {
+    background-color: #ffff00 !important;
+    border: 2px solid #ffff00 !important;
+    color: #000000 !important;
+}
+
+/* Siempre texto negro en la tarjeta activa en modo alto contraste (cualquier médico) */
+body.high-contrast #vistaPaso2 .medico-card.activa,
+body.high-contrast #vistaPaso2 .medico-card.activa *,
+body.high-contrast #vistaPaso2 .medico-card.activa div,
+body.high-contrast #vistaPaso2 .medico-card.activa span,
+body.high-contrast #vistaPaso2 .medico-card.activa i,
+body.high-contrast #vistaPaso2 .medico-card.activa small {
+    color: #000000 !important;
+}
+
+/* Ficha informativa del médico en alto contraste */
+body.high-contrast #vistaPaso2 #fichaMedicoSeleccionado {
+    background-color: #050505 !important;
+    border: 1.5px solid #ffff00 !important;
+    border-left: 4px solid #ffff00 !important;
+    color: #ffffff !important;
+}
+
+body.high-contrast #vistaPaso2 #fichaMedicoSeleccionado .badge.bg-info {
+    background-color: #38bdf8 !important;
+    color: #000000 !important;
+}
+
+body.high-contrast #vistaPaso2 #fichaMedicoSeleccionado .badge.bg-info i,
+body.high-contrast #vistaPaso2 #fichaMedicoSeleccionado .badge.bg-info span {
+    color: #000000 !important;
+}
+
+/* Calendario en alto contraste */
+body.high-contrast #vistaPaso2 .card.border {
+    background-color: #050505 !important;
+    border: 1.5px solid #ffff00 !important;
+}
+
+body.high-contrast #vistaPaso2 .calendar-day {
+    background-color: #111317 !important;
+    border: 1px solid #3f3f46 !important;
+    color: #9ca3af !important;
+}
+
+/* Días habilitados (tienen puntito verde) */
+body.high-contrast #vistaPaso2 .calendar-day:has(.dot-available) {
+    background-color: #07150d !important;
+    border: 1.5px solid #22c55e !important;
+    color: #ffffff !important;
+}
+
+/* Día seleccionado en el calendario (amarillo brillante + texto negro) */
+body.high-contrast #vistaPaso2 .calendar-day.selected {
+    background-color: #ffff00 !important;
+    border: 2px solid #ffff00 !important;
+    color: #000000 !important;
+}
+
+body.high-contrast #vistaPaso2 .calendar-day.selected div,
+body.high-contrast #vistaPaso2 .calendar-day.selected span,
+body.high-contrast #vistaPaso2 .calendar-day.selected small {
+    color: #000000 !important;
+}
+
+body.high-contrast #vistaPaso2 .calendar-day .fa-lock {
+    color: #ffff00 !important;
+}
+
+/* Tarjetas de horarios en alto contraste */
+body.high-contrast #vistaPaso2 .hora-card {
+    background-color: #09090b !important;
+    border: 1.5px solid #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+body.high-contrast #vistaPaso2 .hora-card div,
+body.high-contrast #vistaPaso2 .hora-card span,
+body.high-contrast #vistaPaso2 .hora-card i {
+    color: #ffff00 !important;
+}
+
+body.high-contrast #vistaPaso2 .hora-card.selected,
+body.high-contrast #vistaPaso2 .hora-card[style*="background-color: rgb(0, 86, 179)"],
+body.high-contrast #vistaPaso2 .hora-card[style*="background-color:#0056b3"] {
+    background-color: #ffff00 !important;
+    border: 2px solid #ffff00 !important;
+    color: #000000 !important;
+}
+
+body.high-contrast #vistaPaso2 .hora-card.selected div,
+body.high-contrast #vistaPaso2 .hora-card.selected span,
+body.high-contrast #vistaPaso2 .hora-card.selected i,
+body.high-contrast #vistaPaso2 .hora-card[style*="background-color: rgb(0, 86, 179)"] div,
+body.high-contrast #vistaPaso2 .hora-card[style*="background-color: rgb(0, 86, 179)"] span,
+body.high-contrast #vistaPaso2 .hora-card[style*="background-color: rgb(0, 86, 179)"] i,
+body.high-contrast #vistaPaso2 .hora-card[style*="background-color:#0056b3"] div,
+body.high-contrast #vistaPaso2 .hora-card[style*="background-color:#0056b3"] span,
+body.high-contrast #vistaPaso2 .hora-card[style*="background-color:#0056b3"] i {
+    color: #000000 !important;
+    opacity: 1 !important;
+}
+
+/* Botones inferiores "Volver" y "Revisar cita" en alto contraste */
+body.high-contrast #vistaPaso2 button[onclick*="regresarAPaso1"] {
+    background-color: #09090b !important;
+    border: 1.5px solid #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+body.high-contrast #vistaPaso2 button[onclick*="regresarAPaso1"] i,
+body.high-contrast #vistaPaso2 button[onclick*="regresarAPaso1"] span {
+    color: #ffff00 !important;
+}
+
+body.high-contrast #vistaPaso2 button[onclick*="irAVistaConfirmacion"] {
+    background-color: #ffff00 !important;
+    border: 2px solid #ffff00 !important;
+    color: #000000 !important;
+}
+
+body.high-contrast #vistaPaso2 button[onclick*="irAVistaConfirmacion"] i,
+body.high-contrast #vistaPaso2 button[onclick*="irAVistaConfirmacion"] span {
+    color: #000000 !important;
+}
+/* =========================================================
+   TODAS LAS PALABRAS DEL PASO 2 EN AMARILLO PURO (#ffff00)
+   ========================================================= */
+body.high-contrast #vistaPaso2 h2,
+body.high-contrast #vistaPaso2 h3,
+body.high-contrast #vistaPaso2 h4,
+body.high-contrast #vistaPaso2 h5,
+body.high-contrast #vistaPaso2 h6,
+body.high-contrast #vistaPaso2 p,
+body.high-contrast #vistaPaso2 label,
+body.high-contrast #vistaPaso2 span,
+body.high-contrast #vistaPaso2 strong,
+body.high-contrast #vistaPaso2 small,
+body.high-contrast #vistaPaso2 div,
+body.high-contrast #vistaPaso2 .text-dark,
+body.high-contrast #vistaPaso2 .text-secondary,
+body.high-contrast #vistaPaso2 .text-muted {
+    color: #ffff00 !important;
+}
+
+/* Mantener letras negras sobre fondo amarillo en la tarjeta activa del médico */
+body.high-contrast #vistaPaso2 .medico-card.activa,
+body.high-contrast #vistaPaso2 .medico-card.activa *,
+body.high-contrast #vistaPaso2 .medico-card.activa div,
+body.high-contrast #vistaPaso2 .medico-card.activa span,
+body.high-contrast #vistaPaso2 .medico-card.activa i,
+body.high-contrast #vistaPaso2 .medico-card.activa small {
+    color: #000000 !important;
+}
+
+/* Mantener letras negras en el badge "Información del Médico Especialista" */
+body.high-contrast #vistaPaso2 #fichaMedicoSeleccionado .badge.bg-info,
+body.high-contrast #vistaPaso2 #fichaMedicoSeleccionado .badge.bg-info i,
+body.high-contrast #vistaPaso2 #fichaMedicoSeleccionado .badge.bg-info span {
+    color: #000000 !important;
+}
+
+/* =========================================================
+   MÉDICO NO SELECCIONADO Y BORDE DE FICHA EN AMARILLO (#ffff00)
+   ========================================================= */
+/* Borde exterior amarillo (#ffff00) en la tarjeta del médico NO seleccionado */
+body.high-contrast #vistaPaso2 .card.medico-card:not(.activa) {
+    border-top: 2px solid #ffff00 !important;
+    border-right: 2px solid #ffff00 !important;
+    border-bottom: 2px solid #ffff00 !important;
+    border-left: 2px solid #ffff00 !important;
+    border-color: #ffff00 !important;
+}
+
+body.high-contrast #vistaPaso2 .medico-card:not(.activa),
+body.high-contrast #vistaPaso2 .medico-card:not(.activa) *,
+body.high-contrast #vistaPaso2 .medico-card:not(.activa) div,
+body.high-contrast #vistaPaso2 .medico-card:not(.activa) span,
+body.high-contrast #vistaPaso2 .medico-card:not(.activa) i,
+body.high-contrast #vistaPaso2 .medico-card:not(.activa) small,
+body.high-contrast #vistaPaso2 .medico-card:not(.activa) button {
+    color: #ffff00 !important;
+}
+
+body.high-contrast #vistaPaso2 #fichaMedicoSeleccionado {
+    border: 2px solid #ffff00 !important;
+    border-left: 4px solid #ffff00 !important;
+    border-color: #ffff00 !important;
+}
+/* Ganarle al border !important en línea de la tarjeta de médico NO seleccionada */
+body.high-contrast #vistaPaso2 .medico-card.medico-card:not(.activa),
+body.high-contrast #vistaPaso2 .card.medico-card.medico-card:not(.activa) {
+    border-top: 2px solid #ffff00 !important;
+    border-right: 2px solid #ffff00 !important;
+    border-bottom: 2px solid #ffff00 !important;
+    border-left: 2px solid #ffff00 !important;
+    border-color: #ffff00 !important;
 }

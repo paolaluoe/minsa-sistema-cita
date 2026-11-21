@@ -2,14 +2,12 @@
 <html lang="es">
 
 <head>
-    <!-- Enlace a Bootstrap Icons en el <head> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Inclusivo de Citas Médicas - MINSA</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Enlace al CSS independiente -->
     <link rel="stylesheet" href="css/index.css">
 </head>
 
@@ -25,14 +23,20 @@
             </div>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="toggleAltoContraste()"><i
-                    class="fa-solid fa-circle-half-stroke me-1"></i> Alto contraste</button>
-            <button class="btn btn-sm bg-warning text-dark fw-bold rounded-pill px-3" onclick="toggleTextoGrande()"><i
-                    class="fa-solid fa-a me-1"></i> Texto grande</button>
-            <button class="btn btn-sm btn-light rounded-pill px-3 fw-semibold" onclick="escucharPagina()"><i
-                    class="fa-solid fa-volume-high me-1"></i> Escuchar página</button>
-            <button class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold" data-bs-toggle="modal"
-                data-bs-target="#modalAdminLogin">
+            <button type="button" id="btnAltoContraste" class="btn btn-sm btn-outline-light rounded-pill px-3"
+                onmousedown="event.preventDefault()" onclick="toggleAltoContraste()">
+                <i class="fa-solid fa-circle-half-stroke me-1"></i> Alto contraste
+            </button>
+            <button type="button" class="btn btn-sm bg-warning text-dark fw-bold rounded-pill px-3"
+                onclick="toggleTextoGrande()">
+                <i class="fa-solid fa-a me-1"></i> Texto grande
+            </button>
+            <button type="button" id="btnAudio" class="btn btn-sm btn-light rounded-pill px-3 fw-semibold"
+                onclick="escucharPagina()">
+                <i class="fa-solid fa-volume-high me-1"></i> Escuchar página
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold"
+                data-bs-toggle="modal" data-bs-target="#modalAdminLogin">
                 <i class="fa-solid fa-user-shield me-1"></i> Panel Admin
             </button>
         </div>
@@ -43,8 +47,14 @@
         <div class="row align-items-center g-5">
 
             <!-- Columna Izquierda: Información -->
-            <div class="col-lg-6">
-                <span class="badge-portal text-uppercase mb-3 d-inline-block">PORTAL DEL PACIENTE</span>
+            <section id="secPortalPaciente" class="col-lg-6">
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                    <span class="badge-portal text-uppercase d-inline-block mb-0">PORTAL DEL PACIENTE</span>
+                    <!-- Ejemplos de los botones en cada sección -->
+                    <button type="button" class="btn-escuchar-seccion" onclick="leerSeccion('secPortalPaciente', this)">
+                        <i class="fa-solid fa-volume-high me-1"></i> Escuchar sección
+                    </button>
+                </div>
                 <h2 class="display-6 fw-bold text-dark mb-3" style="line-height: 1.2;">Reserve su Cita Médica Accesible
                 </h2>
                 <p class="text-secondary mb-4" style="font-size: 0.95rem;">
@@ -66,18 +76,26 @@
                         <span>Confirmación de cita con recordatorio por código de atención.</span>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <!-- Columna Derecha: Tarjeta con Pestañas -->
-            <div class="col-lg-6">
+            <section id="secAcceso" class="col-lg-6">
                 <div class="card card-login p-4 p-md-5">
+
+                    <div class="d-flex justify-content-end mb-2">
+                        <!-- 2. Tarjeta de acceso (encerrado arriba a la derecha) -->
+                        <button type="button" class="btn-escuchar-seccion" onclick="leerSeccion('secAcceso', this)">
+                            <i class="fa-solid fa-volume-high me-1"></i> Escuchar sección
+                        </button>
+                    </div>
 
                     <!-- Pestañas de Navegación -->
                     <div class="d-flex gap-4 mb-4 border-bottom pb-2">
-                        <button id="tabLogin" class="tab-custom active" onclick="cambiarTab('login')">
+                        <button type="button" id="tabLogin" class="tab-custom active" onclick="cambiarTab('login')">
                             <i class="fa-solid fa-right-to-bracket me-1"></i> Iniciar Sesión
                         </button>
-                        <button id="tabRegistro" class="tab-custom text-muted" onclick="cambiarTab('registro')">
+                        <button type="button" id="tabRegistro" class="tab-custom text-muted"
+                            onclick="cambiarTab('registro')">
                             <i class="fa-solid fa-user-plus me-1"></i> Registrarse
                         </button>
                     </div>
@@ -155,12 +173,12 @@
                     </div>
 
                 </div>
-            </div>
+            </section>
 
         </div>
     </main>
 
-    <!-- 1. PEGA EL MODAL AQUÍ, AFUERA DE TODO -->
+    <!-- Modal Login Administrador -->
     <div class="modal fade" id="modalAdminLogin" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -196,6 +214,7 @@
             </div>
         </div>
     </div>
+
     <!-- Modal de Éxito de Registro -->
     <div class="modal fade" id="modalRegistroExitoso" tabindex="-1" aria-labelledby="modalRegistroExitosoLabel"
         aria-hidden="true">
@@ -214,7 +233,8 @@
             </div>
         </div>
     </div>
-    <!-- Modal de Mensaje / Alerta General (Para Errores de Login u otros) -->
+
+    <!-- Modal de Mensaje / Alerta General -->
     <div class="modal fade" id="modalAlertaSistema" tabindex="-1" aria-labelledby="modalAlertaSistemaLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -231,14 +251,18 @@
             </div>
         </div>
     </div>
-    <!-- Sección: Todo el proceso de atención en un solo lugar (Con iconos en cajitas) -->
-    <div class="container my-5">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold text-dark">Todo el proceso de atención en un solo lugar</h2>
+
+    <!-- Sección: Todo el proceso de atención en un solo lugar -->
+    <section id="secProcesoAtencion" class="container my-5">
+        <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 mb-5">
+            <h2 class="fw-bold text-dark mb-0">Todo el proceso de atención en un solo lugar</h2>
+            <!-- 3. Todo el proceso de atención (encerrado abajo) -->
+            <button type="button" class="btn-escuchar-seccion" onclick="leerSeccion('secProcesoAtencion', this)">
+                <i class="fa-solid fa-volume-high me-1"></i> Escuchar sección
+            </button>
         </div>
 
         <div class="row g-4">
-            <!-- Tarjeta 1: Elija su hospital -->
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
                     <div class="mb-3">
@@ -254,7 +278,6 @@
                 </div>
             </div>
 
-            <!-- Tarjeta 2: Reserve su horario -->
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
                     <div class="mb-3">
@@ -270,7 +293,6 @@
                 </div>
             </div>
 
-            <!-- Tarjeta 3: Reprograme o cancele -->
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
                     <div class="mb-3">
@@ -286,16 +308,23 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- 2. LUEGO DEJAN TUS SCRIPTS INTACTOS AQUÍ -->
+    <!-- Footer -->
+    <footer id="secFooter" class="text-center py-3 text-muted small border-top bg-white">
+        <p class="mb-0">© 2026 Ministerio de Salud del Perú - Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Tu script del login administrador
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : 'https://minsa-sistema-cita.onrender.com';
+
         function validarLoginAdmin() {
             const user = document.getElementById('txtAdminUser').value;
             const pass = document.getElementById('txtAdminPass').value;
 
-            // Validando con el DNI y Password de tu tabla MySQL
             if (user === '00000000' && pass === 'admin123') {
                 localStorage.setItem('adminLogueado', 'true');
                 window.location.href = 'admin.html';
@@ -303,26 +332,7 @@
                 alert('Credenciales incorrectas. Acceso denegado.');
             }
         }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-
-    <!-- Footer -->
-    <footer class="text-center py-3 text-muted small border-top bg-white">
-        <p class="mb-0">© 2026 Ministerio de Salud del Perú - Todos los derechos reservados.</p>
-    </footer>
-
-
-
-
-
-
-    <!-- Scripts de lógica y accesibilidad -->
-    <script>
-
-        const API_URL = window.location.hostname === 'localhost'
-            ? 'http://localhost:3000'
-            : 'https://minsa-sistema-cita.onrender.com';
         function cambiarTab(tipo) {
             const tabLogin = document.getElementById('tabLogin');
             const tabRegistro = document.getElementById('tabRegistro');
@@ -386,11 +396,9 @@
                 const data = await res.json();
 
                 if (res.ok && data.success) {
-                    // 1. Mostrar el modal elegante de Bootstrap en lugar del alert
                     const myModal = new bootstrap.Modal(document.getElementById('modalRegistroExitoso'));
                     myModal.show();
 
-                    // 2. Al hacer clic en el botón del modal, cambiar al tab de login
                     document.getElementById('btnIrLogin').onclick = () => {
                         cambiarTab('login');
                     };
@@ -403,60 +411,66 @@
             }
         }
 
-        function toggleAltoContraste() { document.body.classList.toggle('high-contrast'); }
-        function toggleTextoGrande() { document.body.classList.toggle('large-text'); }
-        function escucharPagina() {
-            const utterance = new SpeechSynthesisUtterance("Portal del Paciente MINSA. Ingrese su DNI y clave para gestionar sus citas.");
-            utterance.lang = 'es-PE';
-            window.speechSynthesis.speak(utterance);
+        function toggleAltoContraste() {
+            const activo = document.body.classList.toggle('high-contrast');
+            const btn = document.getElementById('btnAltoContraste');
+            if (btn) {
+                btn.classList.toggle('activo', activo);
+                btn.blur();
+            }
         }
-
-
-    </script>
-
-    <script>
         let leyendo = false;
 
-        function escucharPagina() {
+        function hablarTexto(texto) {
             if (!('speechSynthesis' in window)) {
                 alert('Lo siento, tu navegador no soporta la lectura de voz.');
                 return;
             }
+            const synth = window.speechSynthesis;
+            synth.cancel();
 
+            const utterThis = new SpeechSynthesisUtterance(texto);
+            utterThis.lang = 'es-PE';
+            utterThis.rate = 0.95;
+
+            utterThis.onend = () => {
+                leyendo = false;
+                const btn = document.getElementById('btnAudio');
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+            };
+
+            leyendo = true;
+            synth.speak(utterThis);
+        }
+
+        function escucharPagina() {
             const synth = window.speechSynthesis;
             const btn = document.getElementById('btnAudio');
 
-            if (leyendo) {
+            if (leyendo || synth.speaking) {
                 synth.cancel();
                 leyendo = false;
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+                if (btn) {
+                    btn.classList.remove('leyendo');
+                    btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+                }
                 return;
             }
 
             const textosALeer = [];
-            document.querySelectorAll('h1, h2, h3, h4, p, label, .card-reserva').forEach(el => {
-                if (el.offsetParent !== null && el.innerText.trim() !== '') {
+            document.querySelectorAll('h1, h2, h3, h4, p, label').forEach(el => {
+                if (!el.closest('.btn-escuchar-seccion') && el.offsetParent !== null && el.innerText.trim() !== '') {
                     textosALeer.push(el.innerText.trim());
                 }
             });
 
-            const textoCompleto = textosALeer.join('. ');
-            const utterThis = new SpeechSynthesisUtterance(textoCompleto);
-            utterThis.lang = 'es-PE';
-            utterThis.rate = 0.95;
-
-            utterThis.onstart = () => {
-                leyendo = true;
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-stop me-1"></i> Detener audio';
-            };
-
-            utterThis.onend = () => {
-                leyendo = false;
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
-            };
-
-            synth.speak(utterThis);
+            if (btn) {
+                btn.classList.add('leyendo');
+                btn.innerHTML = '<i class="fa-solid fa-stop me-1"></i> Detener audio';
+            }
+            hablarTexto(textosALeer.join('. '));
         }
+
         function mostrarAlertaModal(titulo, mensaje, esError = true) {
             document.getElementById('tituloAlertaModal').innerText = titulo;
             document.getElementById('mensajeAlertaModal').innerText = mensaje;
@@ -473,39 +487,104 @@
             const modalAlerta = new bootstrap.Modal(document.getElementById('modalAlertaSistema'));
             modalAlerta.show();
         }
-        let textoGrandeActivo = false;
+
+        const nivelesTextoGrande = [1, 1.06, 1.12, 1.18, 1.24, 1.3]; // 100%, 106%, 112%, 118%, 124%, 130% (máximo) 
+        let indiceNivelTexto = 0;
 
         function toggleTextoGrande() {
-            textoGrandeActivo = !textoGrandeActivo;
+            indiceNivelTexto = (indiceNivelTexto + 1) % nivelesTextoGrande.length;
+            const factor = nivelesTextoGrande[indiceNivelTexto];
 
-            // Seleccionamos los títulos principales y párrafos clave
-            const titulos = document.querySelectorAll('h1, h2, h3, .lead, p');
+            document.body.classList.toggle('large-text', factor > 1);
 
-            titulos.forEach(el => {
-                if (textoGrandeActivo) {
-                    // Guardamos el tamaño original si lo deseas, o aplicamos un aumento notable
-                    if (!el.dataset.sizeOriginal) {
-                        el.dataset.sizeOriginal = window.getComputedStyle(el).fontSize;
-                    }
-                    // Aumentamos considerablemente los píxeles o usamos escala
-                    let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
-                    el.style.fontSize = (currentSize * 1.35) + 'px'; // Aumenta un 35% real y заметible
-                } else {
-                    // Volver al tamaño original
-                    if (el.dataset.sizeOriginal) {
-                        el.style.fontSize = el.dataset.sizeOriginal;
-                    }
+            const elementos = document.querySelectorAll(
+                'h1, h2, h3, h4, p, label, span, small, a, button, input, .form-text, .lead'
+            );
+
+            elementos.forEach(el => {
+                if (factor === 1) {
+                    el.style.fontSize = '';
+                    delete el.dataset.sizeOriginal;
+                    return;
                 }
+
+                if (!el.dataset.sizeOriginal) {
+                    el.dataset.sizeOriginal = parseFloat(window.getComputedStyle(el).fontSize);
+                }
+
+                const baseSize = parseFloat(el.dataset.sizeOriginal);
+
+                // Ajuste fino para que títulos grandes e inputs/botones crezcan sin deformar ni cortar
+                let factorAjustado = factor;
+                if (el.tagName === 'H1' || el.tagName === 'H2') {
+                    factorAjustado = 1 + ((factor - 1) * 0.55);
+                } else if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') {
+                    factorAjustado = 1 + ((factor - 1) * 0.75);
+                }
+
+                el.style.fontSize = (baseSize * factorAjustado) + 'px';
             });
         }
+
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Tab') {
-                // Permitir la tabulación normal del navegador sin bloquearla
                 event.stopPropagation();
             }
         });
+        let botonActivoSeccion = null;
 
+        function resetearBotonesSeccion() {
+            if (botonActivoSeccion) {
+                botonActivoSeccion.classList.remove('leyendo');
+                botonActivoSeccion.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar sección';
+                botonActivoSeccion = null;
+            }
+        }
 
+        function leerSeccion(idSeccion, btnElement) {
+            if (!('speechSynthesis' in window)) {
+                alert('Tu navegador no soporta lectura por voz.');
+                return;
+            }
+
+            const synth = window.speechSynthesis;
+            const eraElMismoBoton = botonActivoSeccion === btnElement && (synth.speaking || synth.pending);
+
+            synth.cancel();
+            resetearBotonesSeccion();
+
+            if (eraElMismoBoton) {
+                return;
+            }
+
+            const seccion = document.getElementById(idSeccion);
+            if (!seccion) return;
+
+            const partes = [];
+            seccion.querySelectorAll('h1, h2, h3, h4, p, label, .form-text').forEach(el => {
+                if (!el.closest('.btn-escuchar-seccion') && el.offsetParent !== null && el.innerText.trim() !== '') {
+                    partes.push(el.innerText.trim());
+                }
+            });
+
+            const texto = partes.join('. ');
+            if (!texto) return;
+
+            const utterThis = new SpeechSynthesisUtterance(texto);
+            utterThis.lang = 'es-PE';
+            utterThis.rate = 0.95;
+
+            botonActivoSeccion = btnElement || null;
+            if (botonActivoSeccion) {
+                botonActivoSeccion.classList.add('leyendo');
+                botonActivoSeccion.innerHTML = '<i class="fa-solid fa-square me-1"></i> Detener lectura';
+            }
+
+            utterThis.onend = resetearBotonesSeccion;
+            utterThis.onerror = resetearBotonesSeccion;
+
+            synth.speak(utterThis);
+        }
     </script>
 </body>
 

@@ -8,62 +8,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/reserva.css">
-    <style>
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
-
-        .calendar-day {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px 4px;
-            text-align: center;
-            cursor: pointer;
-            background: #fff;
-            transition: all 0.2s;
-            min-height: 55px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .calendar-day:hover {
-            border-color: #004060;
-            background-color: #f8fafc;
-        }
-
-        .calendar-day.selected {
-            background-color: #002B40 !important;
-            color: white !important;
-            border-color: #002B40 !important;
-        }
-
-        .calendar-day.selected .text-muted,
-        .calendar-day.selected small {
-            color: #e2e8f0 !important;
-        }
-
-        .dot-available {
-            height: 5px;
-            width: 5px;
-            background-color: #059669;
-            border-radius: 50%;
-            display: inline-block;
-            margin-top: 4px;
-        }
-    </style>
 </head>
 
 <body onload="inicializarReserva()">
 
     <!-- Header MINSA con barra de accesibilidad integrada -->
-    <header class="minsa-bar d-flex justify-content-between align-items-center px-4 py-3 flex-wrap gap-2"
-        style="background-color: #002B40;">
+    <header class="minsa-bar d-flex justify-content-between align-items-center px-4 py-3 flex-wrap gap-2">
         <div class="d-flex align-items-center gap-3">
-            <div class="logo-m bg-white text-primary fw-bold rounded p-1 px-2" style="font-size: 1.2rem;">M</div>
+            <div class="logo-m">M</div>
             <div>
                 <h1 class="h6 mb-0 fw-bold text-white">Ministerio de Salud</h1>
                 <p class="mb-0 text-white-50 small" style="font-size: 0.75rem;">Sistema Inclusivo de Citas Médicas</p>
@@ -72,11 +24,11 @@
 
         <!-- Controles de Accesibilidad Globales -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            <button onclick="alternarAltoContraste()" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold"
-                style="font-size: 0.8rem;">
+            <button onclick="alternarAltoContraste()" id="btnAltoContraste"
+                class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold" style="font-size: 0.8rem;">
                 <i class="fa-solid fa-circle-half-stroke me-1"></i> Alto contraste
             </button>
-            <button onclick="alternarTextoGrande()"
+            <button onclick="alternarTextoGrande()" id="btnTextoGrande"
                 class="btn btn-sm btn-warning rounded-pill px-3 fw-semibold text-dark" style="font-size: 0.8rem;">
                 <i class="fa-solid fa-text-height me-1"></i> A+ Texto grande
             </button>
@@ -130,15 +82,68 @@
 
             <!-- VISTA 1: HOSPITAL Y ESPECIALIDAD -->
             <div id="vistaPaso1">
+
                 <div class="mb-3">
                     <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">PASO
                         1 DE 3</span>
-                    <h2 class="h4 fw-bold text-dark mb-1">¿Dónde desea atenderse?</h2>
-                    <p class="text-muted small">Seleccione el centro de salud y la especialidad médica que necesita.</p>
+                    <h2 class="h4 fw-bold text-dark mb-1">¿En qué horario y especialidad desea atenderse?</h2>
+                    <p class="text-muted small">Seleccione su turno preferido, su centro de salud referencial y la
+                        especialidad médica.</p>
                 </div>
 
+                <!-- 1. Preferencia horaria -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-secondary mb-2">
+                        <i class="fa-regular fa-clock text-primary me-1"></i> 1. Preferencia horaria
+                    </label>
+                    <div class="row g-2">
+                        <div class="col-6 col-md-3">
+                            <button type="button" class="turno-pill active" id="pill-turno-todos"
+                                onclick="seleccionarPreferenciaTurno('todos')">
+                                <div class="fw-bold turno-titulo small"><i
+                                        class="fa-solid fa-layer-group text-primary me-1"></i> Todos</div>
+                                <small class="text-muted" style="font-size: 0.72rem;">Todo el día</small>
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <button type="button" class="turno-pill" id="pill-turno-manana"
+                                onclick="seleccionarPreferenciaTurno('manana')">
+                                <div class="fw-bold turno-titulo small"><i
+                                        class="fa-solid fa-sun text-warning me-1"></i> Mañana</div>
+                                <small class="text-muted" style="font-size: 0.72rem;">07:00 - 12:00</small>
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <button type="button" class="turno-pill" id="pill-turno-tarde"
+                                onclick="seleccionarPreferenciaTurno('tarde')">
+                                <div class="fw-bold turno-titulo small"><i
+                                        class="fa-solid fa-cloud-sun text-info me-1"></i> Tarde</div>
+                                <small class="text-muted" style="font-size: 0.72rem;">12:00 - 18:00</small>
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <button type="button" class="turno-pill" id="pill-turno-noche"
+                                onclick="seleccionarPreferenciaTurno('noche')">
+                                <div class="fw-bold turno-titulo small"><i
+                                        class="fa-solid fa-moon text-secondary me-1"></i> Noche</div>
+                                <small class="text-muted" style="font-size: 0.72rem;">18:00 - 21:00</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
                 <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary">Centro de salud</label>
+                    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+                        <label class="form-label fw-bold small text-secondary mb-0">
+                            <i class="fa-solid fa-hospital text-primary me-1"></i> 2. Centro de salud
+                        </label>
+                        <span id="badgeCuposSede"
+                            class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1"
+                            style="font-size: 0.75rem;">
+                            Cargando cupos...
+                        </span>
+                    </div>
                     <select id="selectHospital" class="form-select fw-semibold"
                         onchange="cambiarHospitalSeleccionado()">
                         <!-- Dinámico -->
@@ -154,7 +159,9 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary mb-3">Especialidad médica</label>
+                    <label class="form-label fw-bold small text-secondary mb-3">
+                        <i class="fa-solid fa-stethoscope text-primary me-1"></i> 3. Especialidad médica
+                    </label>
                     <div id="contenedorEspecialidades" class="row g-3">
                         <!-- Dinámico -->
                     </div>
@@ -172,16 +179,90 @@
                 <div class="mb-3">
                     <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">PASO
                         2 DE 3</span>
-                    <h2 class="h4 fw-bold text-dark mb-1">Elija una fecha y hora</h2>
-                    <p class="text-muted small">Horarios para <strong id="lblNombreEspecialidad"
-                            class="text-primary">Especialidad</strong> en <span
-                            id="lblNombreHospitalText">Hospital</span>.</p>
+                    <h2 class="h4 fw-bold text-dark mb-1">Escoja su médico especialista y fecha</h2>
+                    <p class="text-muted small mb-0">
+                        Especialidad: <strong id="lblNombreEspecialidad" class="text-primary">Especialidad</strong> ·
+                        Establecimiento: <strong id="lblNombreHospitalText" class="text-dark">Hospital</strong> ·
+                        Turno: <strong id="lblTurnoPaso2" class="text-primary">Todo el día</strong>
+                    </p>
+                </div>
+
+                <!-- 1. Selección de médico y ficha informativa -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <label class="form-label fw-bold text-secondary mb-0">
+                            <i class="fa-solid fa-user-doctor text-primary me-1"></i> 1. Escoja el médico
+                            especialista disponible
+                        </label>
+                        <span id="badgeMedicosDisponibles"
+                            class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-1 rounded-pill"
+                            style="font-size: 0.78rem;">
+                            0 médicos disponibles
+                        </span>
+                    </div>
+
+                    <div id="contenedorMedicosPaso2" class="row g-3 mb-3">
+                        <!-- Tarjetas de médicos dinámicas -->
+                    </div>
+
+                    <div id="fichaMedicoSeleccionado" class="p-3 p-md-4 shadow-sm bg-white rounded-3 d-none"
+                        style="border: 1px solid #e2e8f0; border-left: 4px solid #004a99 !important;">
+                        <div class="mb-2">
+                            <span class="badge bg-info text-dark fw-bold mb-2 px-2 py-1 rounded-2"
+                                style="font-size: 0.72rem;">
+                                <i class="fa-solid fa-id-card-clip me-1"></i> Información del Médico Especialista
+                            </span>
+                            <h3 id="fichaMedicoNombre" class="h5 fw-bold text-dark mb-0">Nombre del Médico</h3>
+                        </div>
+
+                        <div class="row g-2 mt-2 pt-2 border-top small">
+                            <div class="col-12 col-md-6">
+                                <div class="mb-1">
+                                    <strong class="text-dark">Colegiatura y RNE:</strong>
+                                    <span id="fichaMedicoColegiatura" style="color: #334155;">—</span>
+                                </div>
+                                <div>
+                                    <strong class="text-dark">Experiencia:</strong>
+                                    <span id="fichaMedicoExperiencia" style="color: #334155;">—</span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="mb-1">
+                                    <strong class="text-dark">Formación:</strong>
+                                    <span id="fichaMedicoFormacion" style="color: #334155;">—</span>
+                                </div>
+                                <div>
+                                    <strong class="text-dark">Idiomas de atención:</strong>
+                                    <span id="fichaMedicoIdiomas" style="color: #334155;">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Calendario de fechas disponibles -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 mt-3">
+                    <label class="form-label fw-bold text-secondary small mb-0">
+                        <i class="fa-regular fa-calendar-check text-primary me-1"></i> 2. Elija fecha y hora disponibles
+                    </label>
+                    <div class="d-flex align-items-center gap-3 small" style="font-size: 0.75rem;">
+                        <span class="d-inline-flex align-items-center gap-1 text-dark fw-semibold">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-2 fw-bold"
+                                style="width: 24px; height: 22px; background-color: #ecfdf5; border: 1px solid #10b981; color: #047857; font-size: 0.68rem;">04</span>
+                            Fecha habilitada
+                        </span>
+                        <span class="d-inline-flex align-items-center gap-1 text-muted fw-semibold">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-2 fw-bold"
+                                style="width: 24px; height: 22px; background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #94a3b8; font-size: 0.68rem;">05</span>
+                            Bloqueada (sin cupo)
+                        </span>
+                    </div>
                 </div>
 
                 <div class="card border rounded-3 p-3 mb-4 shadow-sm bg-white">
-                    <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-2 flex-wrap gap-2">
                         <h5 class="fw-bold text-dark mb-0">Noviembre 2026</h5>
-                        <small class="text-muted" id="lblEspecialidadCardLabel">Especialidad</small>
+                        <small class="fw-semibold text-primary" id="lblMedicoCalendario">Médico especialista</small>
                     </div>
 
                     <div class="row text-center fw-bold text-muted small mb-2" style="font-size: 0.75rem;">
@@ -200,8 +281,8 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-bold text-secondary small mb-2"
-                        id="lblTituloHorariosDisponibles">Horarios disponibles</label>
+                    <label class="form-label fw-bold text-dark small mb-2" id="lblTituloHorariosDisponibles">Horarios
+                        disponibles</label>
                     <div id="contenedorHorariosDia" class="row g-3">
                         <!-- Dinámico -->
                     </div>
@@ -295,6 +376,7 @@
                     </button>
                 </div>
             </div>
+
         </div>
     </main>
 
@@ -371,20 +453,71 @@
 
         async function cargarHospitalesSelect() {
             try {
-                const res = await fetch(`${API_URL}/api/establecimientos`);
-                listaHospitalesGlobal = await res.json();
+                if (listaHospitalesGlobal.length === 0) {
+                    const res = await fetch(`${API_URL}/api/establecimientos`);
+                    listaHospitalesGlobal = await res.json();
+                }
+
                 const select = document.getElementById('selectHospital');
+                const hospitalPrevio = select.value;
                 select.innerHTML = '';
 
-                listaHospitalesGlobal.forEach(h => {
+                const hospitalesFiltrados = [];
+
+                for (const h of listaHospitalesGlobal) {
+                    if (preferenciaTurnoActual === 'todos') {
+                        hospitalesFiltrados.push(h);
+                        continue;
+                    }
+
+                    // Consultamos las especialidades de este hospital y sus horarios
+                    const resEsp = await fetch(`${API_URL}/api/establecimientos/${h.id}/especialidades`);
+                    const especialidades = await resEsp.json();
+
+                    let tieneCuposEnTurno = false;
+                    for (const esp of especialidades) {
+                        const resHor = await fetch(`${API_URL}/api/establecimientos/${h.id}/especialidades/${esp.id}/medicos-horarios`);
+                        const horarios = await resHor.json();
+                        if (horarios.some(hor => cumplePreferenciaTurno(hor.hora_inicio, preferenciaTurnoActual))) {
+                            tieneCuposEnTurno = true;
+                            break;
+                        }
+                    }
+
+                    if (tieneCuposEnTurno) {
+                        hospitalesFiltrados.push(h);
+                    }
+                }
+
+                if (hospitalesFiltrados.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = 'No hay hospitales con cupos en este horario';
+                    select.appendChild(opt);
+                    document.getElementById('contenedorEspecialidades').innerHTML =
+                        '<div class="col-12 text-center text-danger small py-3">No hay centros de salud disponibles para el turno seleccionado.</div>';
+                    document.getElementById('especialidadSeleccionadaId').value = '';
+                    const badge = document.getElementById('badgeCuposSede');
+                    if (badge) badge.textContent = '0 cupos disponibles';
+                    return;
+                }
+
+                hospitalesFiltrados.forEach(h => {
                     const opt = document.createElement('option');
                     opt.value = h.id;
                     opt.textContent = h.nombre;
                     select.appendChild(opt);
                 });
 
-                if (listaHospitalesGlobal.length > 0) cambiarHospitalSeleccionado();
-            } catch (err) { console.error(err); }
+                // Mantener el hospital anterior si sigue teniendo cupos; si no, elegir el primero disponible
+                if (hospitalPrevio && hospitalesFiltrados.some(h => String(h.id) === String(hospitalPrevio))) {
+                    select.value = hospitalPrevio;
+                }
+
+                cambiarHospitalSeleccionado();
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         function cambiarHospitalSeleccionado() {
@@ -398,16 +531,24 @@
             }
         }
 
+
         async function cargarEspecialidadesGrid(hospId) {
             try {
-                const res = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades`);
-                listaEspecialidadesActuales = await res.json();
                 const contenedor = document.getElementById('contenedorEspecialidades');
-                contenedor.innerHTML = '';
                 document.getElementById('especialidadSeleccionadaId').value = '';
 
-                if (listaEspecialidadesActuales.length === 0) {
+                if (!hospId) {
                     contenedor.innerHTML = '<div class="col-12 text-center text-danger small py-3">No hay especialidades habilitadas en este hospital actualmente.</div>';
+                    return;
+                }
+
+                const res = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades`);
+                listaEspecialidadesActuales = await res.json();
+                contenedor.innerHTML = '';
+
+                if (!listaEspecialidadesActuales || listaEspecialidadesActuales.length === 0) {
+                    contenedor.innerHTML = '<div class="col-12 text-center text-danger small py-3">No hay especialidades habilitadas en este hospital actualmente.</div>';
+                    actualizarBadgeCuposSede();
                     return;
                 }
 
@@ -420,47 +561,103 @@
                     }
                 });
 
-                especialidadesUnicas.forEach((esp, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'col-md-4';
-                    if (index === 0) document.getElementById('especialidadSeleccionadaId').value = esp.id;
+                const datosPorEsp = await Promise.all(
+                    especialidadesUnicas.map(async (esp) => {
+                        try {
+                            const rHor = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades/${esp.id}/medicos-horarios`);
+                            const horarios = await rHor.json();
+                            const filtrados = Array.isArray(horarios)
+                                ? horarios.filter(h => esHorarioDisponible(h) && cumplePreferenciaTurno(h.hora_inicio, preferenciaTurnoActual))
+                                : [];
+                            const medicosUnicos = new Set(filtrados.map(h => h.medico_nombre).filter(Boolean));
+                            return {
+                                espId: esp.id,
+                                cupos: filtrados.length,
+                                medicos: medicosUnicos.size
+                            };
+                        } catch (_) {
+                            return { espId: esp.id, cupos: 0, medicos: 0 };
+                        }
+                    })
+                );
 
+                const mapaStats = new Map(datosPorEsp.map(d => [String(d.espId), d]));
+                let primeraConCuposSeleccionada = false;
+
+                especialidadesUnicas.forEach((esp) => {
+                    const stats = mapaStats.get(String(esp.id)) || { cupos: 0, medicos: 0 };
+                    const tieneCupos = stats.cupos > 0;
+                    const esSeleccionada = tieneCupos && !primeraConCuposSeleccionada;
+
+                    if (esSeleccionada) {
+                        primeraConCuposSeleccionada = true;
+                        document.getElementById('especialidadSeleccionadaId').value = esp.id;
+                    }
+
+                    const textoBadge = tieneCupos
+                        ? `${stats.cupos} ${stats.cupos === 1 ? 'cupo' : 'cupos'} • ${stats.medicos} ${stats.medicos === 1 ? 'médico' : 'médicos'}`
+                        : 'Sin cupos en este turno';
+
+                    const claseBadge = esSeleccionada
+                        ? 'bg-primary text-white'
+                        : (tieneCupos ? 'bg-success text-white' : 'bg-secondary text-white');
+
+                    const div = document.createElement('div');
+                    div.className = 'col-6 col-md-3';
                     div.innerHTML = `
-                        <div class="card p-3 h-100 text-center especialidad-card ${index === 0 ? 'selected border-primary bg-light' : 'border'}" 
-                             id="esp-${esp.id}" onclick="seleccionarEspecialidad(${esp.id})" style="cursor: pointer; transition: all 0.2s;">
-                            <span class="fs-3 mb-2 d-block">${esp.icono || '🩺'}</span>
-                            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.9rem;">${esp.nombre}</h6>
-                            <span class="badge ${index === 0 ? 'bg-primary' : 'bg-secondary'} mt-2" id="badge-${esp.id}">
-                                ${index === 0 ? '✓ Seleccionado' : 'Seleccionar'}
+                        <div class="card p-3 h-100 text-center especialidad-card d-flex flex-column justify-content-between ${esSeleccionada ? 'selected border-primary bg-light' : 'border'} ${!tieneCupos ? 'opacity-50' : ''}"
+                             id="esp-${esp.id}"
+                             data-tiene-cupos="${tieneCupos ? '1' : '0'}"
+                             onclick="${tieneCupos ? `seleccionarEspecialidad(${esp.id})` : ''}"
+                             style="cursor: ${tieneCupos ? 'pointer' : 'not-allowed'}; transition: all 0.2s;">
+                            <div>
+                                <span class="fs-2 mb-2 d-block">${esp.icono || '🩺'}</span>
+                                <h6 class="fw-bold text-dark mb-3" style="font-size: 0.95rem;">${esp.nombre}</h6>
+                            </div>
+                            <span class="badge rounded-pill px-2 py-2 fw-semibold w-100 ${claseBadge}"
+                                  id="badge-${esp.id}"
+                                  style="font-size: 0.75rem;">
+                                ${textoBadge}
                             </span>
                         </div>
                     `;
                     contenedor.appendChild(div);
                 });
-            } catch (err) { console.error(err); }
+
+                if (typeof indiceNivelTexto !== 'undefined' && indiceNivelTexto > 0 && typeof aplicarNivelTextoGrande === 'function') {
+                    aplicarNivelTextoGrande(indiceNivelTexto);
+                }
+
+                actualizarBadgeCuposSede();
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         function seleccionarEspecialidad(id) {
+            const cardSelect = document.getElementById(`esp-${id}`);
+            if (!cardSelect || cardSelect.dataset.tieneCupos !== '1') return;
+
             document.getElementById('especialidadSeleccionadaId').value = id;
+
             document.querySelectorAll('.especialidad-card').forEach(c => {
                 c.classList.remove('selected', 'border-primary', 'bg-light');
                 c.classList.add('border');
-            });
-            document.querySelectorAll('.badge').forEach(b => {
-                b.className = 'badge bg-secondary';
-                b.textContent = 'Seleccionar';
+                const badge = c.querySelector('.badge');
+                if (badge) {
+                    const tieneCupos = c.dataset.tieneCupos === '1';
+                    badge.classList.remove('bg-primary', 'bg-success', 'bg-secondary');
+                    badge.classList.add(tieneCupos ? 'bg-success' : 'bg-secondary');
+                }
             });
 
-            const cardSelect = document.getElementById(`esp-${id}`);
+            cardSelect.classList.add('selected', 'border-primary', 'bg-light');
+            cardSelect.classList.remove('border');
+
             const badgeSelect = document.getElementById(`badge-${id}`);
-
-            if (cardSelect) {
-                cardSelect.classList.add('selected', 'border-primary', 'bg-light');
-                cardSelect.classList.remove('border');
-            }
             if (badgeSelect) {
-                badgeSelect.className = 'badge bg-primary';
-                badgeSelect.textContent = '✓ Seleccionado';
+                badgeSelect.classList.remove('bg-success', 'bg-secondary');
+                badgeSelect.classList.add('bg-primary');
             }
         }
         // ==========================================
@@ -526,9 +723,221 @@
             }
         }
 
+        let listaMedicosAgrupadosPaso2 = [];
+        let medicoSeleccionadoIdPaso2 = null;
+        let horariosBaseTurnoPaso2 = [];
+
+        function obtenerEtiquetaTurno(turno) {
+            const mapa = {
+                todos: 'Todo el día',
+                manana: 'Mañana (07:00 - 12:00)',
+                tarde: 'Tarde (12:00 - 18:00)',
+                noche: 'Noche (18:00 - 21:00)'
+            };
+            return mapa[turno] || 'Todo el día';
+        }
+
+        function obtenerInicialesMedico(nombreCompleto) {
+            const partes = String(nombreCompleto || '')
+                .replace(/^(dr\.?|dra\.?|dr\(a\)\.?)\s+/i, '')
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean);
+            if (partes.length === 0) return 'MD';
+            if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+            return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+        }
+
+        function formatearColegiatura(medico) {
+            const cmp = medico.cmp && String(medico.cmp).trim().toUpperCase() !== 'NULL'
+                ? String(medico.cmp).trim()
+                : '';
+            const rne = medico.rne && String(medico.rne).trim().toUpperCase() !== 'NULL'
+                ? String(medico.rne).trim()
+                : '';
+
+            if (cmp && rne) return `CMP ${cmp} | RNE ${rne}`;
+            if (cmp) return `CMP ${cmp}`;
+            if (rne) return `RNE ${rne}`;
+            return 'No registrado';
+        }
+
+        function renderizarFichaMedico(medico) {
+            const ficha = document.getElementById('fichaMedicoSeleccionado');
+            if (!ficha || !medico) {
+                if (ficha) ficha.classList.add('d-none');
+                return;
+            }
+
+            const anios = Number(medico.anios_experiencia);
+            const expTexto = !Number.isNaN(anios) && anios > 0
+                ? `${anios} ${anios === 1 ? 'año de experiencia' : 'años de experiencia'}`
+                : 'No especificado';
+
+            document.getElementById('fichaMedicoNombre').textContent = medico.nombreCompleto;
+            document.getElementById('fichaMedicoColegiatura').textContent = formatearColegiatura(medico);
+            document.getElementById('fichaMedicoExperiencia').textContent = expTexto;
+            document.getElementById('fichaMedicoFormacion').textContent =
+                (medico.formacion && String(medico.formacion).trim().toUpperCase() !== 'NULL')
+                    ? String(medico.formacion).trim()
+                    : 'No especificado';
+            document.getElementById('fichaMedicoIdiomas').textContent =
+                (medico.idiomas && String(medico.idiomas).trim().toUpperCase() !== 'NULL')
+                    ? String(medico.idiomas).trim()
+                    : 'Español';
+
+            ficha.classList.remove('d-none');
+        }
+
+        function obtenerColegiaturaTarjeta(medico) {
+            const cmp = medico.cmp && String(medico.cmp).trim().toUpperCase() !== 'NULL'
+                ? String(medico.cmp).trim()
+                : '';
+            const rne = medico.rne && String(medico.rne).trim().toUpperCase() !== 'NULL'
+                ? String(medico.rne).trim()
+                : '';
+
+            if (cmp && rne) return `CMP ${cmp} · RNE ${rne}`;
+            if (cmp) return `CMP ${cmp}`;
+            if (rne) return `RNE ${rne}`;
+            return '';
+        }
+
+        function renderizarMedicosPaso2(horariosFiltrados) {
+            const contenedor = document.getElementById('contenedorMedicosPaso2');
+            const badge = document.getElementById('badgeMedicosDisponibles');
+            if (!contenedor) return;
+
+            const mapaMedicos = new Map();
+            (horariosFiltrados || []).forEach((h) => {
+                const medId = String(h.medico_id ?? h.medico_nombre);
+                const nombreBase = h.medico_nombre || 'Médico especialista';
+                const nombreConPrefijo = /^dr/i.test(nombreBase.trim())
+                    ? nombreBase.trim()
+                    : `Dr(a). ${nombreBase.trim()}`;
+
+                if (!mapaMedicos.has(medId)) {
+                    mapaMedicos.set(medId, {
+                        id: medId,
+                        nombreCompleto: nombreConPrefijo,
+                        cmp: h.cmp ?? h.medico_cmp ?? '',
+                        rne: h.rne ?? h.medico_rne ?? '',
+                        anios_experiencia: h.anios_experiencia ?? h.medico_anios_experiencia ?? 0,
+                        formacion: h.formacion ?? h.medico_formacion ?? '',
+                        idiomas: h.idiomas ?? h.medico_idiomas ?? '',
+                        horarios: []
+                    });
+                }
+                mapaMedicos.get(medId).horarios.push(h);
+            });
+
+            listaMedicosAgrupadosPaso2 = Array.from(mapaMedicos.values());
+            const totalMedicos = listaMedicosAgrupadosPaso2.length;
+
+            if (badge) {
+                badge.textContent = `${totalMedicos} ${totalMedicos === 1 ? 'médico disponible' : 'médicos disponibles'}`;
+            }
+
+            if (totalMedicos === 0) {
+                contenedor.innerHTML = '<div class="col-12 text-center text-muted small py-3">No hay médicos con cupos en este turno.</div>';
+                renderizarFichaMedico(null);
+                horariosDisponiblesGlobal = [];
+                construirCalendarioNoviembre2026();
+                return;
+            }
+
+            const claseColumna = totalMedicos === 1 ? 'col-12' : 'col-12 col-md-6';
+            const primerMedico = listaMedicosAgrupadosPaso2[0];
+            medicoSeleccionadoIdPaso2 = primerMedico.id;
+            window.medicoIdSeleccionado = primerMedico.id;
+            horariosDisponiblesGlobal = primerMedico.horarios;
+
+            contenedor.innerHTML = '';
+            listaMedicosAgrupadosPaso2.forEach((med, idx) => {
+                const esElegido = idx === 0;
+                const cupos = med.horarios.length;
+                const textoCupos = `${cupos} ${cupos === 1 ? 'cupo libre' : 'cupos libres'}`;
+                const anios = Number(med.anios_experiencia);
+                const expCorta = !Number.isNaN(anios) && anios > 0
+                    ? `${anios} ${anios === 1 ? 'año de experiencia' : 'años de experiencia'}`
+                    : '';
+
+                const col = document.createElement('div');
+                col.className = claseColumna;
+                col.innerHTML = `
+                    <div class="card p-3 h-100 medico-card ${esElegido ? 'activa' : ''} rounded-3"
+                         id="medico-card-${med.id}"
+                         onclick="seleccionarMedicoPaso2('${med.id}')"
+                         style="cursor: pointer; background-color: ${esElegido ? '#f0f6ff' : '#ffffff'}; border: ${esElegido ? '2px solid #0056b3' : '1px solid #dee2e6'} ; box-shadow: ${esElegido ? '0 0.25rem 0.75rem rgba(0, 86, 179, 0.14)' : '0 0.125rem 0.25rem rgba(0, 0, 0, 0.05)'}; transition: all 0.2s;">
+                        <div class="d-flex align-items-center gap-3 pb-3 mb-3 border-bottom">
+                            <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width: 46px; height: 46px; font-size: 0.95rem; background-color: #003b73;">
+                                ${obtenerInicialesMedico(med.nombreCompleto)}
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size: 1rem;">
+                                    ${med.nombreCompleto}
+                                </div>
+                                ${expCorta ? `<div class="fw-semibold small text-primary mt-1"><i class="fa-solid fa-briefcase-medical me-1"></i>${expCorta}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold small" style="color: #0f766e;">${textoCupos}</span>
+                            <button type="button"
+                                    id="btn-medico-${med.id}"
+                                    class="btn btn-sm px-3 py-1 fw-semibold rounded-2 text-white"
+                                    style="background-color: ${esElegido ? '#0056b3' : '#6c757d'}; border: none;">
+                                ${esElegido ? '<i class="fa-solid fa-check me-1"></i> Elegido' : 'Seleccionar'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                contenedor.appendChild(col);
+            });
+
+            renderizarFichaMedico(primerMedico);
+            construirCalendarioNoviembre2026();
+        }
+
+        function seleccionarMedicoPaso2(medId) {
+            const medico = listaMedicosAgrupadosPaso2.find(m => String(m.id) === String(medId));
+            if (!medico) return;
+
+            medicoSeleccionadoIdPaso2 = medico.id;
+            window.medicoIdSeleccionado = medico.id;
+
+            listaMedicosAgrupadosPaso2.forEach((m) => {
+                const card = document.getElementById(`medico-card-${m.id}`);
+                const btn = document.getElementById(`btn-medico-${m.id}`);
+                const activo = String(m.id) === String(medico.id);
+
+                if (card) {
+                    card.classList.toggle('activa', activo);
+                    card.style.backgroundColor = activo ? '#f0f6ff' : '#ffffff';
+                    card.style.setProperty('border', activo ? '2px solid #0056b3' : '1px solid #dee2e6', 'important');
+                    card.style.boxShadow = activo
+                        ? '0 0.25rem 0.75rem rgba(0, 86, 179, 0.14)'
+                        : '0 0.125rem 0.25rem rgba(0, 0, 0, 0.05)';
+                }
+                if (btn) {
+                    btn.className = 'btn btn-sm px-3 py-1 fw-semibold rounded-2 text-white';
+                    btn.style.backgroundColor = activo ? '#0056b3' : '#6c757d';
+                    btn.style.border = 'none';
+                    btn.innerHTML = activo
+                        ? '<i class="fa-solid fa-check me-1"></i> Elegido'
+                        : 'Seleccionar';
+                }
+            });
+
+            renderizarFichaMedico(medico);
+
+            horariosDisponiblesGlobal = medico.horarios || [];
+            construirCalendarioNoviembre2026();
+        }
+
         async function irAVistaHorarios() {
-            const hospId = document.getElementById('selectHospital').value;
-            const espId = document.getElementById('especialidadSeleccionadaId').value;
+            const hospId = document.getElementById('selectHospital')?.value;
+            const espId = document.getElementById('especialidadSeleccionadaId')?.value;
             if (!espId) {
                 alert('Debe seleccionar una especialidad médica.');
                 return;
@@ -538,24 +947,39 @@
             const hospObj = listaHospitalesGlobal.find(h => h.id == hospId);
 
             if (espObj) {
-                document.getElementById('lblNombreEspecialidad').textContent = espObj.nombre;
-                document.getElementById('lblEspecialidadCardLabel').textContent = `Especialidad: ${espObj.nombre}`;
+                const elEsp = document.getElementById('lblNombreEspecialidad');
+                if (elEsp) elEsp.textContent = espObj.nombre;
+
+                const elEspCard = document.getElementById('lblEspecialidadCardLabel');
+                if (elEspCard) elEspCard.textContent = `Especialidad: ${espObj.nombre}`;
             }
+
             if (hospObj) {
-                document.getElementById('lblNombreHospitalText').textContent = hospObj.nombre;
+                const elHosp = document.getElementById('lblNombreHospitalText');
+                if (elHosp) elHosp.textContent = hospObj.nombre;
+            }
+
+            const lblTurno = document.getElementById('lblTurnoPaso2');
+            const turnoActual = typeof preferenciaTurnoActual !== 'undefined' ? preferenciaTurnoActual : 'todos';
+            if (lblTurno) {
+                lblTurno.textContent = obtenerEtiquetaTurno(turnoActual);
             }
 
             try {
                 const res = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades/${espId}/medicos-horarios`);
-                horariosDisponiblesGlobal = await res.json();
+                const todosHorarios = await res.json();
 
-                construirCalendarioNoviembre2026();
+                const horariosFiltrados = Array.isArray(todosHorarios)
+                    ? todosHorarios.filter(h => cumplePreferenciaTurno(h.hora_inicio, turnoActual))
+                    : [];
 
-                document.getElementById('vistaPaso1').classList.add('d-none');
-                document.getElementById('vistaPaso2').classList.remove('d-none');
+                horariosBaseTurnoPaso2 = horariosFiltrados;
 
-                // Mueve la barra al Paso 2
+                document.getElementById('vistaPaso1')?.classList.add('d-none');
+                document.getElementById('vistaPaso2')?.classList.remove('d-none');
                 actualizarIndicadorPasos(2);
+
+                renderizarMedicosPaso2(horariosFiltrados);
             } catch (err) {
                 console.error(err);
                 alert('Error al obtener los horarios de los médicos.');
@@ -565,7 +989,6 @@
         function regresarAPaso1() {
             document.getElementById('vistaPaso2').classList.add('d-none');
             document.getElementById('vistaPaso1').classList.remove('d-none');
-            // Regresa la barra al Paso 1
             actualizarIndicadorPasos(1);
         }
 
@@ -594,15 +1017,12 @@
 
             document.getElementById('vistaPaso2').classList.add('d-none');
             document.getElementById('vistaPaso3').classList.remove('d-none');
-
-            // Mueve la barra al Paso 3
             actualizarIndicadorPasos(3);
         }
 
         function regresarAPaso2() {
             document.getElementById('vistaPaso3').classList.add('d-none');
             document.getElementById('vistaPaso2').classList.remove('d-none');
-            // Regresa la barra al Paso 2
             actualizarIndicadorPasos(2);
         }
 
@@ -610,10 +1030,25 @@
         // CALENDARIO Y SELECCIÓN DE TURNOS
         // ==========================================
 
+        function formatearFechaLegibleNoviembre(fechaYMD) {
+            const partes = String(fechaYMD || '').split('-');
+            if (partes.length !== 3) return fechaYMD;
+            const diaNum = parseInt(partes[2], 10);
+            return `${diaNum} de Noviembre de ${partes[0]}`;
+        }
+
         function construirCalendarioNoviembre2026() {
             const grilla = document.getElementById('grillaCalendario');
+            if (!grilla) return;
             grilla.innerHTML = '';
 
+            const lblMedicoCal = document.getElementById('lblMedicoCalendario');
+            const medicoActual = listaMedicosAgrupadosPaso2.find(m => String(m.id) === String(medicoSeleccionadoIdPaso2));
+            if (lblMedicoCal) {
+                lblMedicoCal.textContent = medicoActual ? medicoActual.nombreCompleto : '';
+            }
+
+            // Noviembre 2026 empieza en domingo (6 espacios vacíos de Lun a Sáb)
             for (let i = 0; i < 6; i++) {
                 const emptyCol = document.createElement('div');
                 emptyCol.className = 'col text-muted py-2';
@@ -624,36 +1059,67 @@
                 const diaStr = dia < 10 ? `0${dia}` : `${dia}`;
                 const fechaCompleta = `2026-11-${diaStr}`;
 
-                const tieneTurnos = horariosDisponiblesGlobal.some(h => h.fecha.startsWith(fechaCompleta));
+                const tieneTurnos = (horariosDisponiblesGlobal || []).some(h => String(h.fecha).startsWith(fechaCompleta));
 
                 const col = document.createElement('div');
                 col.className = 'col';
                 col.innerHTML = `
-                    <div class="calendar-day ${tieneTurnos ? '' : 'text-muted bg-light'}" id="dia-${fechaCompleta}" onclick="${tieneTurnos ? `seleccionarDiaCalendario('${fechaCompleta}')` : ''}">
-                        <div class="fw-bold">${dia}</div>
-                        ${tieneTurnos ? '<span class="dot-available"></span>' : '<small style="font-size:0.6rem">-</small>'}
+                    <div class="calendar-day d-flex flex-column align-items-center justify-content-center rounded-2 py-2 ${tieneTurnos ? '' : 'text-muted bg-light opacity-75'}"
+                         id="dia-${fechaCompleta}"
+                         onclick="${tieneTurnos ? `seleccionarDiaCalendario('${fechaCompleta}')` : ''}"
+                         style="cursor: ${tieneTurnos ? 'pointer' : 'not-allowed'}; min-height: 52px; border: 1px solid ${tieneTurnos ? '#bbf7d0' : '#e2e8f0'};">
+                        <div class="fw-bold" style="font-size: 0.9rem;">${diaStr}</div>
+                        ${tieneTurnos
+                        ? '<span class="dot-available mt-1"></span>'
+                        : '<i class="fa-solid fa-lock mt-1" style="font-size: 0.65rem; color: #94a3b8;"></i>'}
                     </div>
                 `;
                 grilla.appendChild(col);
             }
 
-            const primerTurno = horariosDisponiblesGlobal[0];
+            const primerTurno = (horariosDisponiblesGlobal || [])[0];
             if (primerTurno) {
-                const fechaYMD = primerTurno.fecha.split('T')[0];
+                const fechaYMD = String(primerTurno.fecha).split('T')[0];
                 seleccionarDiaCalendario(fechaYMD);
             } else {
-                document.getElementById('contenedorHorariosDia').innerHTML = '<div class="col-12 text-center text-danger small py-2">No hay turnos disponibles.</div>';
+                document.getElementById('inputHorarioId').value = '';
+                document.getElementById('inputFecha').value = '';
+                document.getElementById('inputHora').value = '';
+                document.getElementById('lblTituloHorariosDisponibles').textContent = 'Horarios disponibles';
+                document.getElementById('contenedorHorariosDia').innerHTML = '<div class="col-12 text-center text-danger small py-2">No hay turnos disponibles para este médico en el turno elegido.</div>';
             }
         }
+
+        function convertirHoraASegundos(horaTexto) {
+            const limpio = String(horaTexto || '00:00:00').trim();
+            const partes = limpio.split(':').map(n => parseInt(n, 10) || 0);
+            return ((partes[0] || 0) * 3600) + ((partes[1] || 0) * 60) + (partes[2] || 0);
+        }
+
         function seleccionarDiaCalendario(fechaYMD) {
-            document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+            document.querySelectorAll('.calendar-day').forEach(d => {
+                d.classList.remove('selected');
+                d.style.backgroundColor = '';
+                d.style.color = '';
+                d.style.borderColor = '';
+            });
+
             const el = document.getElementById(`dia-${fechaYMD}`);
-            if (el) el.classList.add('selected');
+            if (el) {
+                el.classList.add('selected');
+                el.style.backgroundColor = '#072a47';
+                el.style.color = '#ffffff';
+                el.style.borderColor = '#072a47';
+            }
 
             document.getElementById('inputFecha').value = fechaYMD;
-            document.getElementById('lblTituloHorariosDisponibles').textContent = `Horarios disponibles para el ${fechaYMD}`;
+            document.getElementById('lblTituloHorariosDisponibles').textContent =
+                `Horarios disponibles para el ${formatearFechaLegibleNoviembre(fechaYMD)}`;
 
-            const turnosDelDia = horariosDisponiblesGlobal.filter(h => h.fecha.startsWith(fechaYMD));
+            const turnosDelDia = (horariosDisponiblesGlobal || [])
+                .filter(h => String(h.fecha).startsWith(fechaYMD))
+                .sort((a, b) => convertirHoraASegundos(a.hora_inicio) - convertirHoraASegundos(b.hora_inicio));
+
             const contenedor = document.getElementById('contenedorHorariosDia');
             contenedor.innerHTML = '';
 
@@ -664,57 +1130,59 @@
 
             turnosDelDia.forEach((h, index) => {
                 const div = document.createElement('div');
-                div.className = 'col-md-4';
+                div.className = 'col-6 col-sm-4 col-md-3';
                 const idHorario = h.horario_id || h.id;
+                const esPrimero = index === 0;
+                const nombreMed = h.medico_nombre || '';
 
-                if (index === 0) {
+                if (esPrimero) {
                     document.getElementById('inputHorarioId').value = idHorario;
                     document.getElementById('inputHora').value = `${h.hora_inicio} - ${h.hora_fin}`;
-                    document.getElementById('inputMedico').value = h.medico_nombre;
+                    document.getElementById('inputMedico').value = nombreMed;
                 }
 
                 div.innerHTML = `
-                    <div class="card p-3 hora-card text-center ${index === 0 ? 'selected border-primary bg-light' : 'border'}" 
-                         id="horario-${idHorario}" 
-                         onclick="seleccionarHorarioModal(${idHorario}, '${h.fecha}', '${h.hora_inicio}', '${h.hora_fin}', '${h.medico_nombre}')" 
-                         style="cursor: pointer; transition: all 0.2s;">
-                        <i class="fa-regular fa-clock ${index === 0 ? 'text-primary' : 'text-muted'} fs-5 mb-1"></i>
-                        <h6 class="fw-bold text-dark mb-1" style="font-size: 0.85rem;">${h.hora_inicio}</h6>
-                        <p class="text-muted small mb-2" style="font-size: 0.75rem;"><i class="fa-solid fa-user-doctor me-1"></i>${h.medico_nombre}</p>
-                        <span class="badge ${index === 0 ? 'bg-primary' : 'bg-success'}" style="font-size: 0.65rem;">
-                            ${index === 0 ? '✓ Seleccionado' : 'Disponible'}
-                        </span>
+                    <div class="card p-3 hora-card text-center rounded-3 ${esPrimero ? 'selected' : 'bg-white'}"
+                         id="horario-${idHorario}"
+                         onclick="seleccionarHorarioModal(${idHorario}, '${h.fecha}', '${h.hora_inicio}', '${h.hora_fin}', '${nombreMed.replace(/'/g, "\\'")}')"
+                         style="cursor: pointer; transition: all 0.2s; background-color: ${esPrimero ? '#0056b3' : '#ffffff'}; color: ${esPrimero ? '#ffffff' : '#0f172a'}; border: 1px solid ${esPrimero ? '#0056b3' : '#cbd5e1'} !important;">
+                        <div class="fw-bold" style="font-size: 0.95rem;">
+                            <i class="fa-regular fa-clock me-1"></i>${h.hora_inicio}
+                        </div>
+                        <div class="mt-1 hora-hasta" style="font-size: 0.75rem; opacity: ${esPrimero ? '0.92' : '0.7'};">
+                            Hasta ${h.hora_fin}
+                        </div>
                     </div>
                 `;
                 contenedor.appendChild(div);
             });
         }
-        function seleccionarHorarioModal(horarioId, fecha, horaInicio, horaFin, medicoNombre) {
-            document.getElementById('inputHorarioId').value = horarioId;
-            if (fecha) document.getElementById('inputFecha').value = fecha;
-            document.getElementById('inputHora').value = `${horaInicio} - ${horaFin}`;
-            document.getElementById('inputMedico').value = medicoNombre;
 
-            document.querySelectorAll('.hora-card').forEach(c => {
-                c.classList.remove('selected', 'border-primary', 'bg-light');
-                c.classList.add('border');
-                const badge = c.querySelector('.badge');
-                if (badge) {
-                    badge.className = 'badge bg-success';
-                    badge.textContent = 'Disponible';
+        function seleccionarHorarioModal(horarioId, fecha, horaInicio, horaFin, medicoNombre) {
+            const inputId = document.getElementById('inputHorarioId');
+            const inputFecha = document.getElementById('inputFecha');
+            const inputHora = document.getElementById('inputHora');
+            const inputMedico = document.getElementById('inputMedico');
+
+            if (inputId) inputId.value = horarioId;
+            if (inputFecha && fecha) inputFecha.value = String(fecha).split('T')[0];
+            if (inputHora) inputHora.value = `${horaInicio} - ${horaFin}`;
+            if (inputMedico && medicoNombre) inputMedico.value = medicoNombre;
+
+            document.querySelectorAll('.hora-card').forEach(card => {
+                const esActiva = card.id === `horario-${horarioId}`;
+                card.classList.toggle('selected', esActiva);
+                card.classList.toggle('bg-white', !esActiva);
+
+                card.style.backgroundColor = esActiva ? '#0056b3' : '#ffffff';
+                card.style.color = esActiva ? '#ffffff' : '#0f172a';
+                card.style.setProperty('border', esActiva ? '1px solid #0056b3' : '1px solid #cbd5e1', 'important');
+
+                const subtexto = card.querySelector('.hora-hasta');
+                if (subtexto) {
+                    subtexto.style.opacity = esActiva ? '0.92' : '0.7';
                 }
             });
-
-            const cardSel = document.getElementById(`horario-${horarioId}`);
-            if (cardSel) {
-                cardSel.classList.add('selected', 'border-primary', 'bg-light');
-                cardSel.classList.remove('border');
-                const badgeSel = cardSel.querySelector('.badge');
-                if (badgeSel) {
-                    badgeSel.className = 'badge bg-primary';
-                    badgeSel.textContent = '✓ Seleccionado';
-                }
-            }
         }
 
         // ==========================================
@@ -906,28 +1374,80 @@
         // ACCESIBILIDAD (IHC)
         // ==========================================
 
+        const nivelesTextoGrande = [1, 1.06, 1.12, 1.18, 1.24, 1.3]; // 100% + 5 toques (hasta 130%)
+        let indiceNivelTexto = 0;
+
+        function aplicarNivelTextoGrande(indice) {
+            indiceNivelTexto = ((indice % nivelesTextoGrande.length) + nivelesTextoGrande.length) % nivelesTextoGrande.length;
+            const factor = nivelesTextoGrande[indiceNivelTexto];
+
+            document.body.classList.toggle('large-text', factor > 1);
+
+            const elementos = document.querySelectorAll(
+                'h1, h2, h3, h4, h5, h6, p, label, span, small, a, button, input, select, .form-label, .form-select, .form-control, .card-reserva'
+            );
+
+            elementos.forEach(el => {
+                if (factor === 1) {
+                    el.style.fontSize = '';
+                    delete el.dataset.sizeOriginal;
+                    return;
+                }
+
+                if (!el.dataset.sizeOriginal) {
+                    el.dataset.sizeOriginal = parseFloat(window.getComputedStyle(el).fontSize);
+                }
+
+                const baseSize = parseFloat(el.dataset.sizeOriginal);
+                if (!baseSize || Number.isNaN(baseSize)) return;
+
+                let factorAjustado = factor;
+                if (el.tagName === 'H1' || el.tagName === 'H2') {
+                    factorAjustado = 1 + ((factor - 1) * 0.55);
+                } else if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'BUTTON') {
+                    factorAjustado = 1 + ((factor - 1) * 0.75);
+                }
+
+                el.style.fontSize = (baseSize * factorAjustado) + 'px';
+            });
+
+            localStorage.setItem('nivelTextoGrandeReserva', String(indiceNivelTexto));
+            localStorage.setItem('accesibilidadTextoGrande', factor > 1 ? 'true' : 'false');
+        }
+
         function alternarTextoGrande() {
-            document.body.classList.toggle('texto-ampliado');
-            const esGrande = document.body.classList.contains('texto-ampliado');
-            localStorage.setItem('accesibilidadTextoGrande', esGrande ? 'true' : 'false');
+            aplicarNivelTextoGrande(indiceNivelTexto + 1);
         }
 
         function alternarAltoContraste() {
-            document.body.classList.toggle('alto-contraste');
-            const esContraste = document.body.classList.contains('alto-contraste');
+            document.body.classList.toggle('high-contrast');
+            const esContraste = document.body.classList.contains('high-contrast');
+            const btn = document.getElementById('btnAltoContraste');
+            if (btn) {
+                btn.classList.toggle('activo', esContraste);
+            }
             localStorage.setItem('accesibilidadAltoContraste', esContraste ? 'true' : 'false');
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('accesibilidadTextoGrande') === 'true') {
-                document.body.classList.add('texto-ampliado');
-            }
-            if (localStorage.getItem('accesibilidadAltoContraste') === 'true') {
-                document.body.classList.add('alto-contraste');
+            localStorage.removeItem('accesibilidadAltoContraste');
+            document.body.classList.remove('high-contrast');
+
+            const btn = document.getElementById('btnAltoContraste');
+            if (btn) btn.classList.remove('activo');
+
+            const btnAudio = document.getElementById('btnAudio');
+            if (btnAudio) btnAudio.classList.remove('leyendo');
+
+            const nivelGuardado = parseInt(localStorage.getItem('nivelTextoGrandeReserva') || '0', 10);
+            if (!Number.isNaN(nivelGuardado) && nivelGuardado > 0) {
+                aplicarNivelTextoGrande(nivelGuardado);
+            } else if (localStorage.getItem('accesibilidadTextoGrande') === 'true') {
+                aplicarNivelTextoGrande(1);
             }
         });
-
         let leyendo = false;
+
         function escucharPagina() {
             if (!('speechSynthesis' in window)) {
                 alert('Lo siento, tu navegador no soporta la lectura de voz.');
@@ -940,7 +1460,10 @@
             if (leyendo) {
                 synth.cancel();
                 leyendo = false;
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+                if (btn) {
+                    btn.classList.remove('leyendo');
+                    btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+                }
                 return;
             }
 
@@ -958,12 +1481,18 @@
 
             utterThis.onstart = () => {
                 leyendo = true;
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-stop me-1"></i> Detener audio';
+                if (btn) {
+                    btn.classList.add('leyendo');
+                    btn.innerHTML = '<i class="fa-solid fa-stop me-1"></i> Detener audio';
+                }
             };
 
             utterThis.onend = () => {
                 leyendo = false;
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+                if (btn) {
+                    btn.classList.remove('leyendo');
+                    btn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i> Escuchar página';
+                }
             };
 
             synth.speak(utterThis);
@@ -1052,6 +1581,60 @@
             localStorage.removeItem('pacienteNombre');
             window.location.href = 'index.html';
         }
+
+        let preferenciaTurnoActual = 'todos';
+
+        async function seleccionarPreferenciaTurno(turno) {
+            preferenciaTurnoActual = turno;
+            document.querySelectorAll('.turno-pill').forEach(btn => btn.classList.remove('active'));
+            const pillActiva = document.getElementById(`pill-turno-${turno}`);
+            if (pillActiva) pillActiva.classList.add('active');
+
+            await cargarHospitalesSelect();
+        }
+
+        async function actualizarBadgeCuposSede() {
+            const badge = document.getElementById('badgeCuposSede');
+            const hospId = document.getElementById('selectHospital').value;
+            if (!badge || !hospId) return;
+
+            const etiquetas = {
+                todos: 'Todo el día',
+                manana: 'Mañana (07:00 - 12:00)',
+                tarde: 'Tarde (12:00 - 18:00)',
+                noche: 'Noche (18:00 - 21:00)'
+            };
+
+            try {
+                let totalCupos = 0;
+                for (const esp of listaEspecialidadesActuales) {
+                    const res = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades/${esp.id}/medicos-horarios`);
+                    const horarios = await res.json();
+                    const filtrados = horarios.filter(h => cumplePreferenciaTurno(h.hora_inicio, preferenciaTurnoActual));
+                    totalCupos += filtrados.length;
+                }
+                badge.textContent = `${totalCupos} cupos en esta sede (${etiquetas[preferenciaTurnoActual]})`;
+            } catch (e) {
+                badge.textContent = `Turno: ${etiquetas[preferenciaTurnoActual]}`;
+            }
+        }
+
+        function cumplePreferenciaTurno(horaInicio, turno) {
+            if (turno === 'todos' || !horaInicio) return true;
+            const horaNum = parseInt(String(horaInicio).split(':')[0], 10);
+            if (Number.isNaN(horaNum)) return true;
+            if (turno === 'manana') return horaNum >= 7 && horaNum < 12;
+            if (turno === 'tarde') return horaNum >= 12 && horaNum < 18;
+            if (turno === 'noche') return horaNum >= 18 && horaNum <= 21;
+            return true;
+        }
+
+        function esHorarioDisponible(horario) {
+            return horario && (horario.disponible == 1 || horario.disponible === true);
+        }
+
+
+
     </script>
 </body>
 

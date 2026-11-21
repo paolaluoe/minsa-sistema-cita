@@ -463,6 +463,35 @@
                         <label class="form-label small fw-bold">Apellidos</label>
                         <input type="text" id="medApellidos" class="form-control" placeholder="Ej. Olivos">
                     </div>
+                    <div class="row g-2 mt-1">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">CMP</label>
+                            <input type="text" id="inputCmpMedico" class="form-control" placeholder="Ej. 48921">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">RNE</label>
+                            <input type="text" id="inputRneMedico" class="form-control" placeholder="Ej. 23104">
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <label class="form-label small fw-bold">Años de experiencia</label>
+                        <input type="number" id="inputExperienciaMedico" class="form-control" min="0"
+                            placeholder="Ej. 12">
+                    </div>
+
+                    <div class="mt-2">
+                        <label class="form-label small fw-bold">Formación</label>
+                        <input type="text" id="inputFormacionMedico" class="form-control"
+                            placeholder="Ej. Universidad Nacional Mayor de San Marcos (UNMSM)">
+                    </div>
+
+                    <div class="mt-2">
+                        <label class="form-label small fw-bold">Idiomas de atención</label>
+                        <input type="text" id="inputIdiomasMedico" class="form-control"
+                            placeholder="Ej. Español, Quechua básico">
+                    </div>
+
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary btn-sm px-4"
@@ -514,6 +543,7 @@
                             <label class="form-label small fw-bold text-secondary">Hora de Inicio</label>
                             <select id="horInicio" class="form-select shadow-sm">
                                 <option value="">Seleccione...</option>
+                                <option value="08:00:00">07:00 a. m.</option>
                                 <option value="08:00:00">08:00 a. m.</option>
                                 <option value="09:00:00">09:00 a. m.</option>
                                 <option value="10:00:00">10:00 a. m.</option>
@@ -523,12 +553,16 @@
                                 <option value="15:00:00">03:00 p. m.</option>
                                 <option value="16:00:00">04:00 p. m.</option>
                                 <option value="17:00:00">05:00 p. m.</option>
+                                <option value="18:00:00">06:00 p. m.</option>
+                                <option value="19:00:00">07:00 p. m.</option>
+                                <option value="20:00:00">08:00 p. m.</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label small fw-bold text-secondary">Hora de Fin</label>
                             <select id="horFin" class="form-select shadow-sm">
                                 <option value="">Seleccione...</option>
+                                <option value="08:45:00">07:45 a. m.</option>
                                 <option value="08:45:00">08:45 a. m.</option>
                                 <option value="09:45:00">09:45 a. m.</option>
                                 <option value="10:45:00">10:45 a. m.</option>
@@ -538,6 +572,9 @@
                                 <option value="15:45:00">03:45 p. m.</option>
                                 <option value="16:45:00">04:45 p. m.</option>
                                 <option value="17:45:00">05:45 p. m.</option>
+                                <option value="18:45:00">06:45 p. m.</option>
+                                <option value="19:45:00">07:45 p. m.</option>
+                                <option value="20:45:00">08:45 p. m.</option>
                             </select>
                         </div>
                     </div>
@@ -1067,8 +1104,73 @@
             document.getElementById('medApellidos').value = '';
             document.getElementById('medEsp').innerHTML = '<option value="">Seleccione primero un hospital...</option>';
 
+            // Limpiar los nuevos campos si existen en el HTML
+            const elCmp = document.getElementById('inputCmpMedico');
+            const elRne = document.getElementById('inputRneMedico');
+            const elExp = document.getElementById('inputExperienciaMedico');
+            const elForm = document.getElementById('inputFormacionMedico');
+            const elIdiomas = document.getElementById('inputIdiomasMedico');
+
+            if (elCmp) elCmp.value = '';
+            if (elRne) elRne.value = '';
+            if (elExp) elExp.value = '';
+            if (elForm) elForm.value = '';
+            if (elIdiomas) elIdiomas.value = 'Español';
+
             const modal = new bootstrap.Modal(document.getElementById('modalNuevoMedico'));
             modal.show();
+        }
+
+        // Función para enviar los datos al backend
+        async function guardarMedicoUnico() {
+            const establecimiento_id = document.getElementById('medHosp').value;
+            const especialidad_id = document.getElementById('medEsp').value;
+            const nombres = document.getElementById('medNombres').value.trim();
+            const apellidos = document.getElementById('medApellidos').value.trim();
+
+            const cmp = document.getElementById('inputCmpMedico')?.value.trim() || null;
+            const rne = document.getElementById('inputRneMedico')?.value.trim() || null;
+            const expRaw = document.getElementById('inputExperienciaMedico')?.value;
+            const anios_experiencia = expRaw !== undefined && expRaw !== '' ? Number(expRaw) : 0;
+            const formacion = document.getElementById('inputFormacionMedico')?.value.trim() || null;
+            const idiomas = document.getElementById('inputIdiomasMedico')?.value.trim() || 'Español';
+
+            if (!establecimiento_id || !especialidad_id || !nombres || !apellidos) {
+                mostrarToast("Por favor, complete todos los campos obligatorios.", "danger");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/medicos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombres,
+                        apellidos,
+                        establecimiento_id,
+                        especialidad_id,
+                        cmp,
+                        rne,
+                        anios_experiencia,
+                        formacion,
+                        idiomas
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    mostrarToast("¡Médico registrado con éxito!", "success");
+
+                    bootstrap.Modal.getInstance(document.getElementById('modalNuevoMedico')).hide();
+                    const hActual = document.getElementById('filtroHospitalAgendas').value;
+                    const espActual = document.getElementById('filtroEspecialidadAgendas').value;
+                    if (hActual) cargarMedicosAgendas(hActual, espActual);
+                } else {
+                    mostrarToast(data.error || "No se pudo registrar el médico.", "danger");
+                }
+            } catch (err) {
+                console.error(err);
+                mostrarToast("Error al conectar con el servidor.", "danger");
+            }
         }
 
         function abrirModalNuevoHorario() {
@@ -1173,39 +1275,7 @@
             }
         }
 
-        // Función para enviar los datos al backend (puedes adaptarla según tus endpoints de inserción)
-        async function guardarMedicoUnico() {
-            const establecimiento_id = document.getElementById('medHosp').value;
-            const especialidad_id = document.getElementById('medEsp').value;
-            const nombres = document.getElementById('medNombres').value.trim();
-            const apellidos = document.getElementById('medApellidos').value.trim();
-
-            if (!establecimiento_id || !especialidad_id || !nombres || !apellidos) {
-                mostrarToast("Por favor, complete todos los campos obligatorios.", "danger");
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_URL}/api/admin/medicos`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombres, apellidos, establecimiento_id, especialidad_id })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    // 👉 Mensaje personalizado para el médico
-                    mostrarToast("¡Médico registrado con éxito!", "success");
-
-                    bootstrap.Modal.getInstance(document.getElementById('modalNuevoMedico')).hide();
-                    const hActual = document.getElementById('filtroHospitalAgendas').value;
-                    const espActual = document.getElementById('filtroEspecialidadAgendas').value;
-                    if (hActual) cargarMedicosAgendas(hActual, espActual);
-                }
-            } catch (err) {
-                console.error(err);
-                mostrarToast("Error al conectar con el servidor.", "danger");
-            }
-        }
+        
 
         async function guardarHorarioUnico() {
             const medico_id = document.getElementById('horMedicoId').value;
@@ -1452,6 +1522,47 @@
 
             const modalAlerta = new bootstrap.Modal(document.getElementById('modalAlertaSistema'));
             modalAlerta.show();
+        }
+        async function cargarEspecialidadesSelect(hospId, selectDestinoId) {
+            const selectEsp = document.getElementById(selectDestinoId);
+            selectEsp.innerHTML = '<option value="">Cargando especialidades...</option>';
+
+            if (!hospId) {
+                selectEsp.innerHTML = '<option value="">Seleccione primero un hospital...</option>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/establecimientos/${hospId}/especialidades`);
+                const especialidades = await res.json();
+
+                selectEsp.innerHTML = '<option value="">Seleccione una especialidad...</option>';
+
+                if (!especialidades || especialidades.length === 0) {
+                    selectEsp.innerHTML = '<option value="">No hay especialidades disponibles</option>';
+                    return;
+                }
+
+                const espUnicas = [];
+                const idsVistos = new Set();
+                especialidades.forEach(esp => {
+                    if (!idsVistos.has(esp.id)) {
+                        idsVistos.add(esp.id);
+                        espUnicas.push(esp);
+                    }
+                });
+
+                espUnicas.forEach(esp => {
+                    const opt = document.createElement('option');
+                    opt.value = esp.id;
+                    opt.textContent = esp.nombre;
+                    selectEsp.appendChild(opt);
+                });
+
+            } catch (err) {
+                console.error("Error al cargar especialidades para el select:", err);
+                selectEsp.innerHTML = '<option value="">Error al cargar especialidades</option>';
+            }
         }
     </script>
 </body>
