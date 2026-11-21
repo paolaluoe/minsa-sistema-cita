@@ -141,14 +141,18 @@ app.get('/api/establecimientos/:hospId/especialidades/:espId/medicos-horarios', 
     const { hospId, espId } = req.params;
     try {
         const query = `
-            SELECT h.id as horario_id, h.fecha, h.hora_inicio, h.hora_fin, h.disponible,
-                   m.id as medico_id, CONCAT(m.nombres, ' ', m.apellidos) as medico_nombre,
-                   e.id as especialidad_id, e.nombre as especialidad_name
-            FROM horarios_medicos h
-            INNER JOIN medicos m ON h.medico_id = m.id
-            INNER JOIN especialidades e ON m.especialidad_id = e.id
-            WHERE m.establecimiento_id = ? AND m.especialidad_id = ? AND h.estado != 'Inactivo'
-        `;
+    SELECT h.id as horario_id, h.fecha, h.hora_inicio, h.hora_fin, h.disponible,
+           m.id as medico_id, CONCAT(m.nombres, ' ', m.apellidos) as medico_nombre,
+           m.cmp, m.rne, m.anios_experiencia, m.formacion, m.idiomas,
+           e.id as especialidad_id, e.nombre as especialidad_name
+    FROM horarios_medicos h
+    INNER JOIN medicos m ON h.medico_id = m.id
+    INNER JOIN especialidades e ON m.especialidad_id = e.id
+    WHERE m.establecimiento_id = ?
+      AND m.especialidad_id = ?
+      AND h.estado != 'Inactivo'
+      AND (h.disponible = 1 OR h.disponible = TRUE)
+`;
         const [rows] = await db.query(query, [hospId, espId]);
         res.json(rows);
     } catch (err) {
@@ -302,11 +306,42 @@ app.post('/api/admin/horarios', async (req, res) => {
 // REGISTRAR NUEVO MÉDICO (ADMIN)
 // ==========================================
 app.post('/api/admin/medicos', async (req, res) => {
-    const { nombres, apellidos, establecimiento_id, especialidad_id } = req.body;
+    const {
+        nombres,
+        apellidos,
+        establecimiento_id,
+        especialidad_id,
+        cmp,
+        rne,
+        anios_experiencia,
+        formacion,
+        idiomas
+    } = req.body;
+
     try {
         await db.query(
-            `INSERT INTO medicos (nombres, apellidos, establecimiento_id, especialidad_id) VALUES (?, ?, ?, ?)`,
-            [nombres, apellidos, establecimiento_id, especialidad_id]
+            `INSERT INTO medicos (
+                nombres,
+                apellidos,
+                establecimiento_id,
+                especialidad_id,
+                cmp,
+                rne,
+                anios_experiencia,
+                formacion,
+                idiomas
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                nombres,
+                apellidos,
+                establecimiento_id,
+                especialidad_id,
+                cmp || null,
+                rne || null,
+                Number.isNaN(Number(anios_experiencia)) ? 0 : Number(anios_experiencia),
+                formacion || null,
+                idiomas || 'Español'
+            ]
         );
         res.status(201).json({ success: true, mensaje: 'Médico registrado con éxito' });
     } catch (err) {
@@ -498,7 +533,7 @@ app.get('/api/admin/dashboard-completo', async (req, res) => {
         const [citasInasistencia] = await db.query("SELECT COUNT(*) as total FROM citas WHERE estado = 'NO_ASISTIO'");
         const [citasReservadas] = await db.query("SELECT COUNT(*) as total FROM citas WHERE estado = 'RESERVADA'");
 
-        const totalGral = totalCitas[0].total || 1; 
+        const totalGral = totalCitas[0].total || 1;
         const prog = totalGral; // Total general para el número grande
         const aten = citasAtendidas[0].total;
         const canc = citasCanceladas[0].total;
